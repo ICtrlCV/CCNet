@@ -33,7 +33,7 @@
 
 1. 在utils/socket2springboot.py文件中，我们使用socket进行通信。项目默认端口为`12345`，在部署到服务器之前，请先安装项目相应的工作环境（Anaconda、Miniconda等）。将工作环境设置为默认开启，例如以Miniconda为例，使用`sudo vim .bashrc`命令打开`.bashrc`文件，在最后一行加入`conda activate XXX(你的Pytorch环境)`，保存后使用`source .bashrc`命令即可完成配置；
 
-2. 在当前工作环境中使用`nohub python utils/socket2springboot.py`命令即可运行。我们可以使用`nohub python utils/socket2springboot.py > ../log/socket2springboot.log`中。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
+2. 在当前工作环境中使用`nohup python tools/socket2springboot.py`命令即可运行。我们可以使用`nohup python tools/socket2springboot.py > ../log/socket2springboot.log`中。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
 
 3. 数据流传输均使用Json格式，由客户端传到服务端格式如下：
 
