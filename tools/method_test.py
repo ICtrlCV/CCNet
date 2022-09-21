@@ -5,6 +5,10 @@
     @Author : chairc
     @Site   : https://github.com/chairc
 """
+import os
+import sys
+
+sys.path.append(os.path.dirname(sys.path[0]))
 import json
 import socket
 from torch.utils.data import DataLoader
@@ -79,7 +83,7 @@ def test_get_gt_dir():
 
 
 def test_socket2springboot():
-    msg_json = {"model_name": "Net", "model_path": "../results/1662448384.497914/model_200.pth",
+    msg_json = {"model_name": "Net", "model_path": "../results/1663724937.0182147/model_last.pth",
                 "dataset": "NEUDET",
                 "input_shape": [224, 224], "conf_thres": 0.5, "nms_thres": 0.6,
                 "image_path": ["../asserts/inclusion_1.jpg", "../asserts/patches_235.jpg",

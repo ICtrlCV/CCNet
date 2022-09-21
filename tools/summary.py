@@ -5,8 +5,13 @@
     @Author : chairc
     @Site   : https://github.com/chairc
 """
+import os
+import sys
+
+sys.path.append(os.path.dirname(sys.path[0]))
 from torchsummary import summary
 from network.net import Net as Net
+
 # from network.net_old import Net as Net
 
 if __name__ == "__main__":

@@ -5,12 +5,13 @@
     @Author : chairc
     @Site   : https://github.com/chairc
 """
-import logging
 import os
+import sys
+
+sys.path.append(os.path.dirname(sys.path[0]))
+import logging
 import random
 import xml.etree.ElementTree as ET
-
-from PIL import Image
 
 logger = logging.getLogger(__name__)
 # voc_classes = ["defect"]
@@ -26,7 +27,6 @@ file_dir = "NEUDET"
 voc_img_path = f"../datasets/{file_dir}/JPEGImages"
 voc_annotations_path = f"../datasets/{file_dir}/Annotations"
 voc_image_sets_path = f"../datasets/{file_dir}"
-
 
 
 def read_all_annotations():
