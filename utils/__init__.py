@@ -16,6 +16,5 @@ sys.path.append(os.path.dirname(sys.path[0]))
 # from .map import *
 # from .pth2onnx import *
 # from .pth2tensorrt import *
-# from .socket2springboot import *
 # from .util import *
 
