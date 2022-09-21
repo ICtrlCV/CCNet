@@ -3,4 +3,5 @@
 /utils/weights_transform.py
 /.idea/
 # __pycache__
+__pycache__/
 *.py[cod]

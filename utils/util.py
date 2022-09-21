@@ -50,11 +50,13 @@ def get_test_lines(test_path):
 
 def load_model_weights(model, model_path, device):
     model_dict = model.state_dict()
-    weights_dict = torch.load(model_path, map_location=device)
+    weights = torch.load(model_path, map_location=device)
+    weights_dict = weights["model"]
+    best_ap5095 = weights["ap5095"]
     weights_dict = {k: v for k, v in weights_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
     model_dict.update(weights_dict)
     model.load_state_dict(OrderedDict(model_dict))
-    return model
+    return model, best_ap5095
 
 
 def get_color(i):

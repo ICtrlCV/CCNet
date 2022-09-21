@@ -9,7 +9,6 @@ import logging
 import socket
 import threading
 import json
-from collections import OrderedDict
 
 import coloredlogs
 import cv2
@@ -20,7 +19,7 @@ from network.net import Net
 # from network.net_old import Net
 from utils.bbox import decode_outputs, post_process
 from utils.initialization import device_initializer
-from utils.util import get_classes
+from utils.util import get_classes, load_model_weights
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="INFO")
@@ -38,11 +37,7 @@ def inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thre
 
         # 需要切换到老网络，直接修改import，将net改为net_old
         model = Net(depth=0.33, width=0.5, num_classes=num_classes, act="silu")
-        model_dict = model.state_dict()
-        weights_dict = torch.load(model_path, map_location=device)
-        weights_dict = {k: v for k, v in weights_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
-        model_dict.update(weights_dict)
-        model.load_state_dict(OrderedDict(model_dict))
+        model, _ = load_model_weights(model, model_path, device)
         model.to(device)
         model.eval()
         for image_id, image_path in enumerate(image_paths):

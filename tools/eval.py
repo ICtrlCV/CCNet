@@ -146,8 +146,8 @@ def compute_mAP(eval_type, class_names, conf_thres=0.5, save_path="../results"):
         print(f"VOC mAP@0.5:0.95 is {mAP5095}")
     elif eval_type == "coco":
         coco_results = get_coco_map(class_names, save_path)
-        mAP50 = coco_results[0]
-        mAP5095 = coco_results[1]
+        mAP5095 = coco_results[0]
+        mAP50 = coco_results[1]
         print(f"COCO mAP@0.5 is {mAP50}")
         print(f"COCO mAP@0.5:0.95 is {mAP5095}")
     else:
@@ -240,7 +240,7 @@ def main(arg_list):
         # 模型权重文件
         model_path = f"{save_path}/{load_model_name}.pth"
         logger.info(f"Model is using {model_path} weights.")
-        model = load_model_weights(model, model_path, device)
+        model, _ = load_model_weights(model, model_path, device)
         model.to(device)
         evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names)
         # evaluate_one_img(model, val_lines, input_shape, num_classes, device, data_path, save_box_path, class_names)
@@ -255,7 +255,7 @@ def main(arg_list):
                 file_name, file_extend = os.path.splitext(weight)
                 # 模型权重文件
                 model_path = f"{result_path}/{load_model_name}{file_extend}"
-                model = load_model_weights(model, model_path, device)
+                model, _ = load_model_weights(model, model_path, device)
                 model.to(device)
                 evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names)
                 mAP50, mAP5095 = compute_mAP(eval_type=eval_type, class_names=class_names, save_path=save_path)
@@ -283,9 +283,9 @@ if __name__ == "__main__":
     parser.add_argument("--mode", type=int, default=0)
     parser.add_argument("--result_path", type=str, default="../results")
     # 模型所在文件夹
-    parser.add_argument("--load_model_dir", type=str, default="1662448384.497914")
+    parser.add_argument("--load_model_dir", type=str, default="1663724937.0182147")
     # 模型名称
-    parser.add_argument("--load_model_name", type=str, default="model_200")
+    parser.add_argument("--load_model_name", type=str, default="model_last")
 
     # 激活函数 relu, relu6, silu, lrelu
     parser.add_argument("--act", type=str, default="silu")

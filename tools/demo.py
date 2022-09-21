@@ -6,7 +6,6 @@
     @Site   : https://github.com/chairc
 """
 import logging
-from collections import OrderedDict
 
 import coloredlogs
 import cv2
@@ -15,7 +14,7 @@ import torch
 from network.net import Net
 from utils.bbox import decode_outputs, post_process
 from utils.initialization import device_initializer
-from utils.util import get_classes, draw_rectangle
+from utils.util import get_classes, draw_rectangle, load_model_weights
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="INFO")
@@ -63,7 +62,7 @@ def inference(model, image, input_shape, conf_thres, nms_thres, device):
 
 if __name__ == "__main__":
     mode = "video"
-    model_path = "../results/1662448384.497914/model_200.pth"
+    model_path = "../results/1663724937.0182147/model_last.pth"
     input_shape = [224, 224]
     conf_thres = 0.5
     nms_thres = 0.6
@@ -71,11 +70,7 @@ if __name__ == "__main__":
     device = device_initializer()
 
     model = Net(depth=0.33, width=0.5, num_classes=6, act="silu")
-    model_dict = model.state_dict()
-    weights_dict = torch.load(model_path, map_location=device)
-    weights_dict = {k: v for k, v in weights_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
-    model_dict.update(weights_dict)
-    model.load_state_dict(OrderedDict(model_dict))
+    model, _ = load_model_weights(model, model_path, device)
     model.to(device)
     model.eval()
 

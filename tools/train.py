@@ -47,6 +47,7 @@ def main(arg_list):
     eval_type = arg_list.eval_type
     mosaic = arg_list.mosaic
     mosaic_epoch = arg_list.mosaic_epoch
+    best_ap5095 = 0
     # 学习率函数
     lr_func = arg_list.lr_func
     # 检查我们使用的设备
@@ -81,7 +82,8 @@ def main(arg_list):
         load_model_dir = arg_list.load_model_dir
         model_path = f"{arg_list.result_path}/{load_model_dir}/model_{str(start_epoch - 1).zfill(3)}.pth"
         dir_path = load_model_dir
-        model = load_model_weights(model, model_path, device)
+        model, ap5095 = load_model_weights(model, model_path, device)
+        best_ap5095 = ap5095
     else:
         start_epoch = 1
         epochs_num = epochs
@@ -174,11 +176,26 @@ def main(arg_list):
             tb_logger.add_scalar("mAP5095", mAP5095, global_step=epoch)
             logger.info(f"mAP@0.5: {mAP50}")
             logger.info(f"mAP@0.5:0.95: {mAP5095}")
-
+        else:
+            mAP50 = 0
+            mAP5095 = 0
+            logger.info("No evaluation, please use the eval method to evaluate after training.")
         # 保存模型
-        torch.save(model.state_dict(), f"{save_path}/model_{str(epoch).zfill(3)}.pth")
+        save_model = {
+            "epoch": epoch,
+            "model": model.state_dict(),
+            "ap50": mAP50,
+            "ap5095": mAP5095
+        }
+        torch.save(save_model, f"{save_path}/model_last.pth")
+        if arg_list.save_model_interval:
+            torch.save(save_model, f"{save_path}/model_{str(epoch).zfill(3)}.pth")
+            logger.info(f"Successfully save the model_{str(epoch).zfill(3)}.")
+        if best_ap5095 < mAP5095:
+            best_ap5095 = mAP5095
+            torch.save(save_model, f"{save_path}/model_best.pth")
+            logger.info(f"Successfully save the model_best.")
         logger.info(f"Successfully save the model.")
-
     # 训练时间
     use_time = time.time() - t0
     logger.info(f"Training time is {use_time}")
@@ -203,11 +220,13 @@ if __name__ == "__main__":
     parser.add_argument("--input_shape", type=list, default=[224, 224])
     # 数据集路径
     parser.add_argument("--data_path", type=str, default="../datasets/NEUDET")
-    # 保存日志路径
+    # 保存路径
     parser.add_argument("--result_path", type=str, default="../results")
+    # 是否每次训练储存
+    parser.add_argument("--save_model_interval", type=bool, default=True)
     # 打开评估模式
     parser.add_argument("--mode", type=bool, default=True)
-    parser.add_argument("--eval_interval", type=int, default=3)
+    parser.add_argument("--eval_interval", type=int, default=1)
     # 打开Mosaic
     parser.add_argument("--mosaic", type=bool, default=True)
     parser.add_argument("--mosaic_epoch", type=int, default=15)
