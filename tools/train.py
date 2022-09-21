@@ -53,10 +53,10 @@ def main(arg_list):
     device = device_initializer()
     # sgd: 1e-2  adam, adamw: 1e-4
     if optim == "adam" or optim == "adamw":
-        init_lr = 1e-4
+        init_lr = 1e-4 / 8
         min_lr = init_lr * 0.01
     else:
-        init_lr = 1e-2
+        init_lr = 1e-2 / 8
         min_lr = init_lr * 0.01
     input_shape = arg_list.input_shape
     # 数据集路径
