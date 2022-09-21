@@ -22,52 +22,55 @@
 ## 如何训练与评估
 
 1. 将数据集放到datasets中，并为其创建一个新的文件夹（所有路径请勿使用中文），需要使用VOC格式（JPEGImages、Annotations）；
-2. 关于生成数据集，在tools/annotations.py修改voc_classes、file_dir，右键运行；
-3. 关于训练，在tools/train.py修改`if __name__ == "__main__"`中的参数，右键运行训练即可；
-4. 训练数据在控制台中输入`tensorboard --logdir=results`即可，打开浏览器**（不要用谷歌，会出bug）**，输入`localhost:6006`查看；
-5. 关于评估，在tools/eval.py修改`if __name__ == "__main__"`中的参数，右键运行评估即可。
+2. 关于生成数据集，在`tools/annotations.py`修改`voc_classes`、`file_dir`，右键运行；
+3. 关于训练，在`tools/train.py`修改`if __name__ == "__main__"`中的参数，右键运行训练即可；
+4. 训练数据在控制台中输入`tensorboard --logdir=results`即可，打开浏览器（**不要用谷歌，会出bug**），输入`localhost:6006`查看；
+5. 关于评估，在`tools/eval.py`修改`if __name__ == "__main__"`中的参数，右键运行评估即可。
 
 
 
 ## 如何进行与Springboot等服务器进行交互
 
-1. 在utils/socket2springboot.py文件中，我们使用socket进行通信。项目默认端口为`12345`，在部署到服务器之前，请先安装项目相应的工作环境（Anaconda、Miniconda等）。将工作环境设置为默认开启，例如以Miniconda为例，使用`sudo vim .bashrc`命令打开`.bashrc`文件，在最后一行加入`conda activate XXX(你的Pytorch环境)`，保存后使用`source .bashrc`命令即可完成配置；
+1. 在`tools/socket2springboot.py`文件中，我们使用socket进行通信。项目默认端口为`12345`，在部署到服务器之前，请先安装项目相应的工作环境（Anaconda、Miniconda等）。将工作环境设置为默认开启，例如以Miniconda为例，使用`sudo vim .bashrc`命令打开`.bashrc`文件，在最后一行加入`conda activate XXX(你的Pytorch环境)`，保存后使用`source .bashrc`命令即可完成配置；
 
-2. 在当前工作环境中使用`nohup python tools/socket2springboot.py`命令即可运行。我们可以使用`nohup python tools/socket2springboot.py > ../log/socket2springboot.log`中。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
+2. 在当前工作环境中使用`nohup python tools/socket2springboot.py`命令即可运行。我们可以使用`nohup python -u tools/socket2springboot.py > /your/path/log/socket2springboot.log`命令将python输出日志保存。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
 
-3. 数据流传输均使用Json格式，由客户端传到服务端格式如下：
+3. 当测试是否运行成功时，我们使用`ps -def | grep "socket2springboot.py"`命令查看当前程序运行的pid。当其可以被找到后，运行`python tools/method_test.py`发送测试的Json数据流。
+
+4. 数据流传输均使用Json格式，由客户端传到服务端格式如下：
 
    ```json
    {
        "model_name": "Net", 
-       "model_path": "../results/1662448384.497914/model_200.pth",
+       "model_path": "../your/modle/path/your_model_name.pth",
        "dataset": "NEUDET",
        "input_shape": [224, 224],
        "conf_thres": 0.5,
        "nms_thres": 0.6,
-       "image_path": ["../asserts/inclusion_1.jpg",
-                      "../asserts/patches_235.jpg",
-                      "../asserts/rolled-in_scale_264.jpg"]
+       "image_path": ["../your/image/path/image1.jpg",
+                      "../your/image/path/image2.jpg",
+                      "../your/image/path/image3.jpg"]
    }
    ```
+5. 当发送完数据后，我们使用`vim log/socket2springboot.log`命令打开log文件，此时文件中将记录服务端返回Json数据流。
 
-4. 数据流由服务端返回到客户端格式如下：
+6. 数据流由服务端返回到客户端格式如下：
 
    ```json
    {
        "image": [
-           {"image_path": "../asserts/inclusion_1.jpg", "image_id": 0}, 
-           {"image_path": "../asserts/patches_235.jpg", "image_id": 1}, 
-           {"image_path": "../asserts/rolled-in_scale_264.jpg", "image_id": 2}], 
+           {"image_path": "../your/image/path/image1.jpg", "image_id": 0}, 
+           {"image_path": "../your/image/path/image2.jpg", "image_id": 1}, 
+           {"image_path": "../your/image/path/image3.jpg", "image_id": 2}], 
        "annotations": [
-           {"image_id": 0, "box": [117.38097, 32.385307, 133.57707, 62.68074], "predicted_class": "inclusion", "conf": 0.66143817}, 
-           {"image_id": 0, "box": [33.51411, 6.4222217, 48.198418, 34.87923], "predicted_class": "inclusion", "conf": 0.64585626}, 
-           {"image_id": 0, "box": [112.736916, 146.3184, 133.77809, 198.33405], "predicted_class": "inclusion", "conf": 0.63799584}, 
-           {"image_id": 0, "box": [114.86066, 73.44805, 142.24493, 114.508995], "predicted_class": "inclusion", "conf": 0.61806077}, 
-           {"image_id": 1, "box": [108.89356, -5.1439524, 180.93867, 138.25955], "predicted_class": "patches", "conf": 0.7961505}, 
-           {"image_id": 1, "box": [92.11259, 127.67179, 183.05533, 199.58357], "predicted_class": "patches", "conf": 0.7741741}, 
-           {"image_id": 1, "box": [10.045683, 65.02976, 73.03552, 122.30415], "predicted_class": "patches", "conf": 0.72269356}, 
-           {"image_id": 2, "box": [32.543327, 38.372814, 145.7598, 195.50223], "predicted_class": "rolled-in_scale", "conf": 0.7584684}]
+           {"image_id": 0, "box": [117.38097, 32.385307, 133.57707, 62.68074], "predicted_class": "class1", "conf": 0.66143817}, 
+           {"image_id": 0, "box": [33.51411, 6.4222217, 48.198418, 34.87923], "predicted_class": "class1", "conf": 0.64585626}, 
+           {"image_id": 0, "box": [112.736916, 146.3184, 133.77809, 198.33405], "predicted_class": "class1", "conf": 0.63799584}, 
+           {"image_id": 0, "box": [114.86066, 73.44805, 142.24493, 114.508995], "predicted_class": "class1", "conf": 0.61806077}, 
+           {"image_id": 1, "box": [108.89356, -5.1439524, 180.93867, 138.25955], "predicted_class": "class2", "conf": 0.7961505}, 
+           {"image_id": 1, "box": [92.11259, 127.67179, 183.05533, 199.58357], "predicted_class": "class2", "conf": 0.7741741}, 
+           {"image_id": 1, "box": [10.045683, 65.02976, 73.03552, 122.30415], "predicted_class": "class2", "conf": 0.72269356}, 
+           {"image_id": 2, "box": [32.543327, 38.372814, 145.7598, 195.50223], "predicted_class": "class3", "conf": 0.7584684}]
    }
    
    ```
