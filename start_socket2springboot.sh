@@ -7,7 +7,7 @@ nohup python -u tools/socket2springboot.py > /home/ubuntu/cy/net/log/socket2spri
 sleep 1s
 ps -def | grep "socket2springboot.py"
 sleep 1s
-python tools/method_test.py
+python test/method_test.py
 echo "wait inference"
 sleep 2s
 echo "inference finish"

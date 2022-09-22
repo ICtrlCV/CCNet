@@ -37,7 +37,7 @@
 
 3. 在当前工作环境中使用`nohup python tools/socket2springboot.py`命令即可运行。我们可以使用`nohup python -u tools/socket2springboot.py > /your/path/log/socket2springboot.log 2>&1 &`命令将python输出日志保存。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
 
-4. 当测试是否运行成功时，我们使用`ps -def | grep "socket2springboot.py"`命令查看当前程序运行的pid。当其可以被找到后，运行`python tools/method_test.py`发送测试的Json数据流；
+4. 当测试是否运行成功时，我们使用`ps -def | grep "socket2springboot.py"`命令查看当前程序运行的pid。当其可以被找到后，运行`python test/method_test.py`发送测试的Json数据流；
 
 5. 数据流传输均使用Json格式，由客户端传到服务端格式如下：
 
