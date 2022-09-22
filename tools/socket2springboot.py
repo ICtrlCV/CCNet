@@ -52,7 +52,11 @@ def inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thre
             image_dict = {"image_path": image_path, "image_id": image_id}
             msg_dict["image"].append(image_dict)
             # 转化成RGB
-            cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            try:
+                cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            except Exception:
+                logger.error(f"The image {image_path} is not a 3 channel picture.")
+                continue
 
             # resize
             ih, iw = image.shape[0], image.shape[1]
@@ -126,7 +130,7 @@ def main():
         logger.info(f"连接地址:{str(address)}")
         try:
             # 为每一个请求开启一个处理线程
-            t = ServerThreading(client_socket)
+            t = ServerThreading(client_socket, address)
             t.start()
             pass
         except Exception as identifier:
@@ -136,15 +140,15 @@ def main():
 
 
 class ServerThreading(threading.Thread):
-    def __init__(self, client_socket, recvsize=1024 * 1024, encoding="utf-8"):
+    def __init__(self, client_socket, address, recvsize=1024 * 1024, encoding="utf-8"):
         threading.Thread.__init__(self)
         self._socket = client_socket
+        self._address = address
         self._recvsize = recvsize
         self._encoding = encoding
-        pass
 
     def run(self):
-        logger.info("开启线程.....")
+        logger.info(f"为{self._address}开启线程.....")
         try:
             # 接受数据
             msg = ""
@@ -174,7 +178,7 @@ class ServerThreading(threading.Thread):
             # 调用模型选择器处理请求并获取模型返回值
             res = inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thres, image_paths)
             send_msg = res
-            logger.info(f"当前返回值为:{send_msg}")
+            logger.info(f"当前为{self._address}返回值为:{send_msg}")
             # 发送数据
             self._socket.send(f"{send_msg}".encode(self._encoding))
             pass
@@ -184,7 +188,7 @@ class ServerThreading(threading.Thread):
             pass
         finally:
             self._socket.close()
-        logger.info("任务结束.....")
+        logger.info(f"{self._address}任务结束.....")
 
         pass
 

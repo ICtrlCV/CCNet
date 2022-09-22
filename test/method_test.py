@@ -122,6 +122,27 @@ def test_get_root():
     logger.info(root)
 
 
+def test_socket2springboot_different_channel():
+    model_path = os.path.join(root, "weights/NEUDET/NEUDET.pth")
+    image1 = os.path.join(root, "asserts/inclusion_1.jpg")
+    image2 = os.path.join(root, "asserts/different_channel.gif")
+    image3 = os.path.join(root, "asserts/rolled-in_scale_264.jpg")
+    msg_json = {"model_name": "Net", "model_path": model_path,
+                "dataset": "NEUDET",
+                "input_shape": [224, 224], "conf_thres": 0.5, "nms_thres": 0.6,
+                "image_path": [image1, image2, image3]}
+    logger.info(msg_json)
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    host = socket.gethostname()
+    client_socket.bind((host, 12346))
+    client_socket.connect((host, 12345))
+    msg = json.dumps(msg_json)
+    client_socket.send(msg.encode("utf-8"))
+    client_socket.send("over".encode("utf-8"))
+    client_socket.close()
+    logger.info("Send message successfully!")
+
+
 if __name__ == "__main__":
     # test_lr()
     # test_datasets()

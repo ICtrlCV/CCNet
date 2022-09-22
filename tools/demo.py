@@ -27,7 +27,10 @@ root = get_root_path()
 
 def inference(model, image, input_shape, conf_thres, nms_thres, device):
     # 转化成RGB
-    cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    try:
+        cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    except Exception:
+        logger.error(f"The image {image} is not a 3 channel picture.")
 
     # resize
     ih, iw = image.shape[0], image.shape[1]
