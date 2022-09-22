@@ -5,11 +5,18 @@
     @Author : chairc
     @Site   : https://github.com/chairc
 """
+import logging
+import os
+
+import coloredlogs
 import cv2
 import torch
 import numpy as np
+import xml.etree.ElementTree as ET
 
 from collections import OrderedDict
+
+from tqdm import tqdm
 
 
 def get_classes(classes_path):
@@ -57,6 +64,37 @@ def load_model_weights(model, model_path, device):
     model_dict.update(weights_dict)
     model.load_state_dict(OrderedDict(model_dict))
     return model, best_ap5095
+
+
+def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, class_names):
+    if not os.path.exists(ground_truth_results_path):
+        os.makedirs(ground_truth_results_path)
+    for line in tqdm(anno_lines):
+        line_content = line.split()
+        # 获取图片原名
+        file_name, file_extend = os.path.splitext(line_content[0])
+        with open(f"{ground_truth_results_path}/{file_name}.txt", "w") as fw:
+            root = ET.parse(f"{voc_annotations_path}/{file_name}.xml").getroot()
+            for obj in root.findall("object"):
+                difficult_flag = False
+                if obj.find("difficult") is not None:
+                    difficult = obj.find("difficult").text
+                    if int(difficult) == 1:
+                        difficult_flag = True
+                obj_name = obj.find("name").text
+                if obj_name not in class_names:
+                    continue
+                bndbox = obj.find("bndbox")
+                left = bndbox.find("xmin").text
+                top = bndbox.find("ymin").text
+                right = bndbox.find("xmax").text
+                bottom = bndbox.find("ymax").text
+
+                if difficult_flag:
+                    fw.write(f"{obj_name} {left} {top} {right} {bottom} difficult\n")
+                else:
+                    fw.write(f"{obj_name} {left} {top} {right} {bottom}\n")
+        fw.close()
 
 
 def get_color(i):
@@ -115,3 +153,14 @@ def draw_rectangle(results, image, iw, ih, input_shape, class_names):
         )
         cv2.putText(image, text, (left, top + txt_size[1]), font, 0.4, txt_color, thickness=thickness)
     return image
+
+
+def replace_path_str(path_str):
+    path_str = path_str.replace("\\", "/")
+    return path_str
+
+
+def get_root_path(project_name="Net"):
+    current_path = replace_path_str(os.path.abspath(os.path.dirname(__file__)))
+    root = current_path[:current_path.find(f"{project_name}/") + len(f"{project_name}/")]
+    return root

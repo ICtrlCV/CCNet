@@ -33,35 +33,37 @@
 
 1. 在`tools/socket2springboot.py`文件中，我们使用socket进行通信。项目默认端口为`12345`，在部署到服务器之前，请先安装项目相应的工作环境（Anaconda、Miniconda等）。将工作环境设置为默认开启，例如以Miniconda为例，使用`sudo vim .bashrc`命令打开`.bashrc`文件，在最后一行加入`conda activate XXX(你的Pytorch环境)`，保存后使用`source .bashrc`命令即可完成配置；
 
-2. 在当前工作环境中使用`nohup python tools/socket2springboot.py`命令即可运行。我们可以使用`nohup python -u tools/socket2springboot.py > /your/path/log/socket2springboot.log`命令将python输出日志保存。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
+2. 项目提供脚本文件，运行方式为`bash socket2springboot.sh`；
 
-3. 当测试是否运行成功时，我们使用`ps -def | grep "socket2springboot.py"`命令查看当前程序运行的pid。当其可以被找到后，运行`python tools/method_test.py`发送测试的Json数据流。
+3. 在当前工作环境中使用`nohup python tools/socket2springboot.py`命令即可运行。我们可以使用`nohup python -u tools/socket2springboot.py > /your/path/log/socket2springboot.log 2>&1 &`命令将python输出日志保存。如果需要重启或关闭服务，使用`htop`命令找到运行程序后Kill；
 
-4. 数据流传输均使用Json格式，由客户端传到服务端格式如下：
+4. 当测试是否运行成功时，我们使用`ps -def | grep "socket2springboot.py"`命令查看当前程序运行的pid。当其可以被找到后，运行`python tools/method_test.py`发送测试的Json数据流；
+
+5. 数据流传输均使用Json格式，由客户端传到服务端格式如下：
 
    ```json
    {
        "model_name": "Net", 
-       "model_path": "../your/modle/path/your_model_name.pth",
+       "model_path": "/your/modle/path/your_model_name.pth",
        "dataset": "NEUDET",
        "input_shape": [224, 224],
        "conf_thres": 0.5,
        "nms_thres": 0.6,
-       "image_path": ["../your/image/path/image1.jpg",
-                      "../your/image/path/image2.jpg",
-                      "../your/image/path/image3.jpg"]
+       "image_path": ["/your/image/path/image1.jpg",
+                      "/your/image/path/image2.jpg",
+                      "/your/image/path/image3.jpg"]
    }
    ```
-5. 当发送完数据后，我们使用`vim log/socket2springboot.log`命令打开log文件，此时文件中将记录服务端返回Json数据流。
+6. 当发送完数据后，我们使用`vim log/socket2springboot.log`命令打开log文件，此时文件中将记录服务端返回Json数据流；
 
-6. 数据流由服务端返回到客户端格式如下：
+7. 数据流由服务端返回到客户端格式如下：
 
    ```json
    {
        "image": [
-           {"image_path": "../your/image/path/image1.jpg", "image_id": 0}, 
-           {"image_path": "../your/image/path/image2.jpg", "image_id": 1}, 
-           {"image_path": "../your/image/path/image3.jpg", "image_id": 2}], 
+           {"image_path": "/your/image/path/image1.jpg", "image_id": 0}, 
+           {"image_path": "/your/image/path/image2.jpg", "image_id": 1}, 
+           {"image_path": "/your/image/path/image3.jpg", "image_id": 2}], 
        "annotations": [
            {"image_id": 0, "box": [117.38097, 32.385307, 133.57707, 62.68074], "predicted_class": "class1", "conf": 0.66143817}, 
            {"image_id": 0, "box": [33.51411, 6.4222217, 48.198418, 34.87923], "predicted_class": "class1", "conf": 0.64585626}, 

@@ -23,17 +23,18 @@ from network.net import Net
 # from network.net_old import Net
 from utils.bbox import decode_outputs, post_process
 from utils.initialization import device_initializer
-from utils.util import get_classes, load_model_weights
+from utils.util import get_classes, load_model_weights, get_root_path
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="INFO")
+root = get_root_path()
 
 
 def inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thres, image_paths):
     if model_name == "Net":
         msg_dict = {"image": [], "annotations": []}
         model_path = model_path
-        class_names, num_classes = get_classes(f"../datasets/{dataset}/classes.txt")
+        class_names, num_classes = get_classes(os.path.join(root, f"datasets/{dataset}/classes.txt"))
         device = device_initializer()
         if device == "cpu":
             # 如果服务器只有cpu，限制1个核跑
@@ -94,7 +95,8 @@ def inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thre
                 conf = top_conf[i]
                 # [y0,x0,y1,x1]
                 top, left, bottom, right = box
-                ann_dict = {"image_id": image_id, "box": [left, top, right, bottom], "predicted_class": predicted_class,
+                ann_dict = {"image_id": image_id, "box": [int(left), int(top), int(right), int(bottom)],
+                            "predicted_class": predicted_class,
                             "conf": conf}
                 msg_dict["annotations"].append(ann_dict)
         return_set = msg_dict
@@ -116,19 +118,19 @@ def main():
     server_socket.listen(5)
     # 获取本地服务器的连接信息
     local_server_address = server_socket.getsockname()
-    print(f"服务器地址:{str(local_server_address)}")
+    logger.info(f"服务器地址:{str(local_server_address)}")
     # 循环等待接受客户端信息
     while True:
         # 获取一个客户端连接
         client_socket, address = server_socket.accept()
-        print(f"连接地址:{str(address)}")
+        logger.info(f"连接地址:{str(address)}")
         try:
             # 为每一个请求开启一个处理线程
             t = ServerThreading(client_socket)
             t.start()
             pass
         except Exception as identifier:
-            print(identifier)
+            logger.error(identifier)
             break
     server_socket.close()
 
@@ -142,7 +144,7 @@ class ServerThreading(threading.Thread):
         pass
 
     def run(self):
-        print("开启线程.....")
+        logger.info("开启线程.....")
         try:
             # 接受数据
             msg = ""
@@ -172,17 +174,17 @@ class ServerThreading(threading.Thread):
             # 调用模型选择器处理请求并获取模型返回值
             res = inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thres, image_paths)
             send_msg = res
-            print(f"当前返回值为:{send_msg}")
+            logger.info(f"当前返回值为:{send_msg}")
             # 发送数据
             self._socket.send(f"{send_msg}".encode(self._encoding))
             pass
         except Exception as identifier:
             self._socket.send("500".encode(self._encoding))
-            print(identifier)
+            logger.error(identifier)
             pass
         finally:
             self._socket.close()
-        print("任务结束.....")
+        logger.info("任务结束.....")
 
         pass
 

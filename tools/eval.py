@@ -15,7 +15,6 @@ import argparse
 import coloredlogs
 import torch
 import numpy as np
-import xml.etree.ElementTree as ET
 from PIL import Image
 from tensorboardX import SummaryWriter
 from torch.utils.data import DataLoader
@@ -26,11 +25,12 @@ from network.net import Net
 from utils.datasets import Datasets, dataset_collate
 from utils.bbox import decode_outputs, post_process
 from utils.initialization import device_initializer, model_initializer
-from utils.util import get_val_lines, get_classes, load_model_weights
+from utils.util import get_val_lines, get_classes, load_model_weights, get_root_path, get_gt_dir
 from utils.map import get_map, get_coco_map
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="INFO")
+root = get_root_path()
 
 
 def evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names,
@@ -133,7 +133,7 @@ def evaluate_one_img(model, val_lines, input_shape, num_classes, device, data_pa
         f.close()
 
 
-def compute_mAP(eval_type, class_names, conf_thres=0.5, save_path="../results"):
+def compute_mAP(eval_type, class_names, conf_thres=0.5, save_path=f"{root}results"):
     if eval_type == "voc":
         min_overlaps = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
         voc_results = []
@@ -157,37 +157,6 @@ def compute_mAP(eval_type, class_names, conf_thres=0.5, save_path="../results"):
         mAP50 = 0
         mAP5095 = 0
     return mAP50, mAP5095
-
-
-def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, class_names):
-    if not os.path.exists(ground_truth_results_path):
-        os.makedirs(ground_truth_results_path)
-    for line in tqdm(anno_lines):
-        line_content = line.split()
-        # 获取图片原名
-        file_name, file_extend = os.path.splitext(line_content[0])
-        with open(f"{ground_truth_results_path}/{file_name}.txt", "w") as fw:
-            root = ET.parse(f"{voc_annotations_path}/{file_name}.xml").getroot()
-            for obj in root.findall("object"):
-                difficult_flag = False
-                if obj.find("difficult") is not None:
-                    difficult = obj.find("difficult").text
-                    if int(difficult) == 1:
-                        difficult_flag = True
-                obj_name = obj.find("name").text
-                if obj_name not in class_names:
-                    continue
-                bndbox = obj.find("bndbox")
-                left = bndbox.find("xmin").text
-                top = bndbox.find("ymin").text
-                right = bndbox.find("xmax").text
-                bottom = bndbox.find("ymax").text
-
-                if difficult_flag:
-                    fw.write(f"{obj_name} {left} {top} {right} {bottom} difficult\n")
-                else:
-                    fw.write(f"{obj_name} {left} {top} {right} {bottom}\n")
-        fw.close()
 
 
 def main(arg_list):
@@ -275,27 +244,27 @@ if __name__ == "__main__":
     parser.add_argument("--model_type", type=str, default="s")
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--num_workers", type=int, default=2)
-    parser.add_argument("--conf_thres", type=float, default=0.5, help="confidence threshold")
-    parser.add_argument("--iou_thres", type=float, default=0.5, help="NMS IoU threshold")
+    parser.add_argument("--conf_thres", type=float, default=0.001, help="confidence threshold")
+    parser.add_argument("--iou_thres", type=float, default=0.6, help="NMS IoU threshold")
     # 输入尺寸大小
     parser.add_argument("--input_shape", type=list, default=[224, 224])
     # 数据集路径
-    parser.add_argument("--data_path", type=str, default="../datasets/NEUDET")
+    parser.add_argument("--data_path", type=str, default=f"{root}datasets/NEUDET")
 
     # 验证模式，0单独验证（需要写入模型名称和所在文件夹），1批量验证（需要写入模型文件夹）
     parser.add_argument("--mode", type=int, default=0)
-    parser.add_argument("--result_path", type=str, default="../results")
+    parser.add_argument("--result_path", type=str, default=f"{root}results")
     # 模型所在文件夹
-    parser.add_argument("--load_model_dir", type=str, default="1663724937.0182147")
+    parser.add_argument("--load_model_dir", type=str, default="1663817017.9118543")
     # 模型名称
-    parser.add_argument("--load_model_name", type=str, default="model_last")
+    parser.add_argument("--load_model_name", type=str, default="model_best")
 
     # 激活函数 relu, relu6, silu, lrelu
     parser.add_argument("--act", type=str, default="silu")
     # box, seg, mask, keypoint
     parser.add_argument("--eval_class", type=str, default="box")
     # voc, coco
-    parser.add_argument("--eval_type", type=str, default="voc")
+    parser.add_argument("--eval_type", type=str, default="coco")
     args = parser.parse_args()
     logger.info(f"当前参数：{args}")
     main(args)

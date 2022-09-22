@@ -17,11 +17,12 @@ import numpy as np
 import torch
 from network.net import Net
 from utils.bbox import decode_outputs, post_process
-from utils.initialization import device_initializer
-from utils.util import get_classes, draw_rectangle, load_model_weights
+from utils.initialization import device_initializer, model_initializer
+from utils.util import get_classes, draw_rectangle, load_model_weights, get_root_path
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="INFO")
+root = get_root_path()
 
 
 def inference(model, image, input_shape, conf_thres, nms_thres, device):
@@ -65,21 +66,24 @@ def inference(model, image, input_shape, conf_thres, nms_thres, device):
 
 
 if __name__ == "__main__":
-    mode = "video"
-    model_path = "../results/1663724937.0182147/model_last.pth"
+    mode = "image"
+    dataset = "NEUDET"
+    model_path = os.path.join(root, f"weights/{dataset}/{dataset}.pth")
     input_shape = [224, 224]
     conf_thres = 0.5
+    # nms阈值不建议修改
     nms_thres = 0.6
-    class_names, num_classes = get_classes("../datasets/NEUDET/classes.txt")
+    class_names, num_classes = get_classes(os.path.join(root, f"datasets/{dataset}/classes.txt"))
     device = device_initializer()
+    depth, width = model_initializer(type="s")
 
-    model = Net(depth=0.33, width=0.5, num_classes=6, act="silu")
+    model = Net(depth=depth, width=width, num_classes=num_classes, act="silu")
     model, _ = load_model_weights(model, model_path, device)
     model.to(device)
     model.eval()
 
     if mode == "image":
-        img_path = "../asserts/inclusion_1.jpg"
+        img_path = os.path.join(root, "asserts/inclusion_1.jpg")
         image = cv2.imread(img_path)
         image = inference(model, image, input_shape, conf_thres, nms_thres, device)
         cv2.imshow("image", image)

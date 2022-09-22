@@ -23,17 +23,19 @@ from torch.utils.data import DataLoader
 
 from network.net import Net
 from network.loss import Loss
-from eval import evaluate, get_gt_dir, compute_mAP
+from eval import evaluate, compute_mAP
 from utils.datasets import Datasets, dataset_collate
 from utils.lr_scheduler import set_optimizer_lr
 from utils.initialization import device_initializer, model_initializer
-from utils.util import get_classes, get_train_lines, get_val_lines, load_model_weights
+from utils.util import get_classes, get_train_lines, get_val_lines, load_model_weights, get_root_path, get_gt_dir
 
 logger = logging.getLogger(__name__)
 coloredlogs.install(level="INFO")
+root = get_root_path()
 
 
 def main(arg_list):
+    logger.info(f"Input params: {arg_list}")
     model_type = arg_list.model_type
     depth, width = model_initializer(model_type)
     # 迭代次数
@@ -100,8 +102,8 @@ def main(arg_list):
     model = model.to(device)
 
     # 日志保存路径
-    logs_path = f"{arg_list.result_path}/{dir_path}/tensorboard"
     save_path = f"{arg_list.result_path}/{dir_path}"
+    logs_path = f"{save_path}/tensorboard"
     save_box_path = f"{save_path}/detection_results"
     save_gt_path = f"{save_path}/ground_truth"
     anno_path = f"{data_path}/Annotations"
@@ -223,14 +225,14 @@ if __name__ == "__main__":
     # 输入尺寸大小
     parser.add_argument("--input_shape", type=list, default=[224, 224])
     # 数据集路径
-    parser.add_argument("--data_path", type=str, default="../datasets/NEUDET")
+    parser.add_argument("--data_path", type=str, default=f"{root}datasets/NEUDET")
     # 保存路径
-    parser.add_argument("--result_path", type=str, default="../results")
+    parser.add_argument("--result_path", type=str, default=f"{root}results")
     # 是否每次训练储存
     parser.add_argument("--save_model_interval", type=bool, default=True)
     # 打开评估模式
     parser.add_argument("--mode", type=bool, default=True)
-    parser.add_argument("--eval_interval", type=int, default=1)
+    parser.add_argument("--eval_interval", type=int, default=10)
     # 打开Mosaic
     parser.add_argument("--mosaic", type=bool, default=True)
     parser.add_argument("--mosaic_epoch", type=int, default=15)
@@ -242,5 +244,4 @@ if __name__ == "__main__":
     parser.add_argument("--load_model_dir", type=str, default="")
 
     args = parser.parse_args()
-    logger.info(f"Input params: {args}")
     main(args)

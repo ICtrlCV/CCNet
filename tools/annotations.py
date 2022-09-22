@@ -8,12 +8,18 @@
 import os
 import sys
 
+import coloredlogs
+
 sys.path.append(os.path.dirname(sys.path[0]))
 import logging
 import random
 import xml.etree.ElementTree as ET
+from utils.util import get_root_path
 
 logger = logging.getLogger(__name__)
+coloredlogs.install(level="INFO")
+root = get_root_path()
+
 # voc_classes = ["defect"]
 voc_classes = ["crazing", "inclusion", "patches", "pitted_surface", "rolled-in_scale", "scratches"]
 
@@ -24,9 +30,9 @@ train_val_percent = 0.9
 
 file_dir = "NEUDET"
 
-voc_img_path = f"../datasets/{file_dir}/JPEGImages"
-voc_annotations_path = f"../datasets/{file_dir}/Annotations"
-voc_image_sets_path = f"../datasets/{file_dir}"
+voc_img_path = os.path.join(root, f"datasets/{file_dir}/JPEGImages")
+voc_annotations_path = os.path.join(root, f"datasets/{file_dir}/Annotations")
+voc_image_sets_path = os.path.join(root, f"datasets/{file_dir}")
 
 
 def read_all_annotations():
@@ -56,11 +62,12 @@ def read_all_annotations():
                     list_file.write(" " + ",".join([str(a) for a in position]) + "," + str(cls_id))
                 list_file.write("\n")
     list_file.close()
+    logger.info("Read all annotations is finished.")
 
 
 def write_train_val_test_annotations():
     random.seed(0)
-    with open(f"../datasets/{file_dir}/all.txt") as anno_r:
+    with open(os.path.join(root, f"datasets/{file_dir}/all.txt")) as anno_r:
         anno_lines = anno_r.readlines()
     anno_r.close()
     num_annotations = len(anno_lines)
@@ -99,6 +106,7 @@ def write_train_val_test_annotations():
     f_val.close()
     f_test.close()
     f_classes.close()
+    logger.info("Write all annotations is finished.")
 
 
 def create_annotations():

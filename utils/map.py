@@ -18,8 +18,10 @@ import matplotlib
 from matplotlib import pyplot as plt
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
+from utils.util import get_root_path
 
 matplotlib.use("Agg")
+root = get_root_path()
 
 """
     0,0 ------> x (width)
@@ -302,7 +304,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title, x_label, out
     plt.close()
 
 
-def get_map(min_overlap, draw_plot=False, score_threhold=0.5, path="../results"):
+def get_map(min_overlap, draw_plot=False, score_threhold=0.5, path=f"{root}results"):
     gt_path = os.path.join(path, "ground_truth")
     dr_path = os.path.join(path, "detection_results")
     img_path = os.path.join(path, "images_optional")

@@ -1,7 +1,10 @@
-/datasets/
+/datasets/NEUDET
+/datasets/NRSD
 /results/
 /utils/weights_transform.py
 /.idea/
+/weights/NEUDET
+/weights/NRSD
 # __pycache__
 __pycache__/
 *.py[cod]

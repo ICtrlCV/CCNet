@@ -8,10 +8,13 @@
 import os
 import torch
 from network.net import Net
+from utils.util import get_root_path
+
+root = get_root_path()
 
 result_name = "1657616363.2346666"
 model_name = "model_100"
-model_root = f"../results/{result_name}"
+model_root = os.path.join(root,f"results/{result_name}")
 model_path = f"{model_root}/{model_name}.pth"
 onnx_path = f"{model_root}/pth2onnx"
 if not os.path.exists(onnx_path):
