@@ -160,7 +160,7 @@ def replace_path_str(path_str):
     return path_str
 
 
-def get_root_path(project_name="Net"):
+def get_root_path(project_name="CCNet"):
     current_path = replace_path_str(os.path.abspath(os.path.dirname(__file__)))
     root = current_path[:current_path.find(f"{project_name}/") + len(f"{project_name}/")]
     return root
