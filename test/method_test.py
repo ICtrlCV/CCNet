@@ -115,6 +115,31 @@ def test_socket2springboot():
     logger.info("Send message successfully!")
 
 
+def test_socket2springboot_repeatedly():
+    model_path = os.path.join(root, "weights/NEUDET/NEUDET.pth")
+    image1 = os.path.join(root, "asserts/inclusion_1.jpg")
+    image2 = os.path.join(root, "asserts/patches_235.jpg")
+    image3 = os.path.join(root, "asserts/rolled-in_scale_264.jpg")
+    msg_json = {"model_name": "Net", "model_path": model_path,
+                "dataset": "NEUDET",
+                "input_shape": [224, 224], "conf_thres": 0.5, "nms_thres": 0.6,
+                "image_path": [image1, image2, image3]}
+    logger.info(msg_json)
+    port_list = [12346, 12347, 12348, 12349, 12350, 12351, 12352, 12353, 12354, 12355, 12356, 12357, 12358, 12359,
+                 12360, 12361]
+    for port in port_list:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # host = "127.0.1.1"
+        # host = "192.168.16.1"
+        host = socket.gethostname()
+        client_socket.bind((host, port))
+        client_socket.connect((host, 12345))
+        msg = json.dumps(msg_json)
+        client_socket.send(msg.encode("utf-8"))
+        client_socket.send("over".encode("utf-8"))
+        client_socket.close()
+
+
 def test_get_root():
     current_path = replace_path_str(os.path.abspath(os.path.dirname(__file__)))
     logger.info(current_path)
@@ -149,4 +174,5 @@ if __name__ == "__main__":
     # test_model_type()
     # test_get_gt_dir()
     test_socket2springboot()
+    # test_socket2springboot_repeatedly()
     # test_get_root()
