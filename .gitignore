@@ -1,7 +1,7 @@
 /datasets/NEUDET
 /datasets/NRSD
 /results/
-/utils/weights_transform.py
+/export/weights_transform.py
 /.idea/
 /weights/NEUDET
 /weights/NRSD
