@@ -35,6 +35,23 @@ root = get_root_path()
 
 def evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names,
              conf_thres=0.001, nms_thres=0.6):
+    """
+        评估方法
+    Args:
+        model: 模型
+        val_dataloader: 验证集
+        val_lines: 验证集列表
+        input_shape: 输入尺寸
+        num_classes: 类别个数
+        device: 设备
+        save_box_path: 保存box路径
+        class_names: 类别名称
+        conf_thres: 置信度阈值
+        nms_thres: 非极大值抑制阈值
+
+    Returns:
+
+    """
     model.eval()
     for current_iter, batch in enumerate(tqdm(val_dataloader)):
         image, _, image_info = batch
@@ -86,6 +103,23 @@ def evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device,
 
 def evaluate_one_img(model, val_lines, input_shape, num_classes, device, data_path, save_box_path, class_names,
                      conf_thres=0.001, nms_thres=0.6):
+    """
+        单张图片评估
+    Args:
+        model: 模型
+        val_lines: 验证集列表
+        input_shape: 输入尺寸
+        num_classes: 类别个数
+        device: 设备
+        data_path: 数据集路径
+        save_box_path: 保存box路径
+        class_names: 类别名称
+        conf_thres: 置信度阈值
+        nms_thres: 非极大值抑制阈值
+
+    Returns:
+
+    """
     model.eval()
     for line in val_lines:
         line = line.split()
@@ -134,6 +168,17 @@ def evaluate_one_img(model, val_lines, input_shape, num_classes, device, data_pa
 
 
 def compute_mAP(eval_type, class_names, conf_thres=0.5, save_path=f"{root}results"):
+    """
+        计算mAP
+    Args:
+        eval_type: 评估类型 voc或者coco
+        class_names: 类别名称
+        conf_thres: 置信度阈值
+        save_path: 保存临时文件路径
+
+    Returns: mAP50 mAP5095
+
+    """
     if eval_type == "voc":
         min_overlaps = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
         voc_results = []
@@ -160,6 +205,11 @@ def compute_mAP(eval_type, class_names, conf_thres=0.5, save_path=f"{root}result
 
 
 def main(arg_list):
+    """
+        主函数
+    Args:
+        arg_list: 参数列表
+    """
     model_type = arg_list.model_type
     depth, width = model_initializer(model_type)
     device = device_initializer()

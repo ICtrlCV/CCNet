@@ -15,8 +15,9 @@ coloredlogs.install(level="INFO")
 
 def device_initializer():
     """
-        This function init the program when it is the first running.
-    :return:
+        该函数在程序第一次运行时初始化运行设备信息
+    Returns: 运行设备
+
     """
     logger.info("Init program, it is checking the basic setting.")
     device_dict = {}
@@ -42,7 +43,12 @@ def device_initializer():
 
 def model_initializer(type="s"):
     """
-        This Enum is defined the selection of model, such as depth and width.
+        字典定义了模型的选择，例如深度和宽度。
+    Args:
+        type: 模型体积
+
+    Returns: 深度 宽度
+
     """
     depth_dict = {"tiny": 0.33, "s": 0.33, "m": 0.67, "l": 1.00, "x": 1.33}
     width_dict = {"tiny": 0.375, "s": 0.50, "m": 0.75, "l": 1.00, "x": 1.25}

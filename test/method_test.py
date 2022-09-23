@@ -26,11 +26,24 @@ root = get_root_path()
 
 
 def test_lr():
+    """
+        学习率方法测试
+    """
     import matplotlib.pyplot as plt
     import torch
     from math import cos, pi
 
     def warmup_cos_lr(fn_optimizer, current_epoch, fn_max_epoch, fn_lr_min=0.0, fn_lr_max=0.1, warmup=True):
+        """
+            预热 + 余弦退火学习率实现
+        Args:
+            fn_optimizer: 优化器方法
+            current_epoch: 当前迭代次数
+            fn_max_epoch: 最大迭代次数
+            fn_lr_min: 最小学习率
+            fn_lr_max: 最大学习率
+            warmup: 是否预热
+        """
         warmup_epoch = 5 if warmup else 0
         if current_epoch < warmup_epoch:
             lr = fn_lr_max * current_epoch / warmup_epoch
@@ -64,6 +77,9 @@ def test_lr():
 
 
 def test_datasets():
+    """
+       数据集读取测试类
+    """
     val_lines = get_val_lines(os.path.join(root, "datasets/NEUDET/val.txt"))
     input_shape = [224, 224]
     num_classes, class_len = get_classes(os.path.join(root, "datasets/NEUDET/classes.txt"))
@@ -78,6 +94,9 @@ def test_datasets():
 
 
 def test_model_type():
+    """
+        模型体积测试类
+    """
     type_list = ["s", "m", "l", "x"]
     for type in type_list:
         depth, width = model_initializer(type=type)
@@ -85,6 +104,9 @@ def test_model_type():
 
 
 def test_get_gt_dir():
+    """
+        生成真实标签测试类
+    """
     class_names, num_classes = get_classes(os.path.join(root, "datasets/NEUDET/classes.txt"))
     val_lines = get_val_lines(os.path.join(root, "datasets/NEUDET/val.txt"))
     save_gt_path = os.path.join(root, "results/1662448384.497914/gt")
@@ -93,6 +115,9 @@ def test_get_gt_dir():
 
 
 def test_socket2springboot():
+    """
+        socket2springboot.py接口测试类
+    """
     model_path = os.path.join(root, "weights/NEUDET/NEUDET.pth")
     image1 = os.path.join(root, "asserts/inclusion_1.jpg")
     image2 = os.path.join(root, "asserts/patches_235.jpg")
@@ -116,6 +141,9 @@ def test_socket2springboot():
 
 
 def test_socket2springboot_repeatedly():
+    """
+        socket2springboot.py多接口访问测试类
+    """
     model_path = os.path.join(root, "weights/NEUDET/NEUDET.pth")
     image1 = os.path.join(root, "asserts/inclusion_1.jpg")
     image2 = os.path.join(root, "asserts/patches_235.jpg")
@@ -141,6 +169,9 @@ def test_socket2springboot_repeatedly():
 
 
 def test_get_root():
+    """
+        根目录转换测试类
+    """
     current_path = replace_path_str(os.path.abspath(os.path.dirname(__file__)))
     logger.info(current_path)
     root = current_path[:current_path.find("Net/") + len("Net/")]
@@ -148,6 +179,9 @@ def test_get_root():
 
 
 def test_socket2springboot_different_channel():
+    """
+        socket2springboot.py异常通道访问测试类
+    """
     model_path = os.path.join(root, "weights/NEUDET/NEUDET.pth")
     image1 = os.path.join(root, "asserts/inclusion_1.jpg")
     image2 = os.path.join(root, "asserts/different_channel.gif")
@@ -173,6 +207,8 @@ if __name__ == "__main__":
     # test_datasets()
     # test_model_type()
     # test_get_gt_dir()
-    test_socket2springboot()
+    # test_socket2springboot()
     # test_socket2springboot_repeatedly()
     # test_get_root()
+    # test_socket2springboot_different_channel
+    pass

@@ -14,7 +14,14 @@ import torch.nn.functional as F
 
 
 class Loss(nn.Module):
-    def __init__(self, num_classes, strides=None, loss_type="siou"):
+    def __init__(self, num_classes, strides=None, loss_type="ciou"):
+        """
+            Loss初始化
+        Args:
+            num_classes: 类别个数
+            strides: 步长
+            loss_type: 使用的loss方法类别
+        """
         super().__init__()
         if strides is None:
             strides = [8, 16, 32]
@@ -50,6 +57,16 @@ class Loss(nn.Module):
         return self.get_losses(x_shifts, y_shifts, expanded_strides, labels, torch.cat(outputs, 1))
 
     def get_output_and_grid(self, output, k, stride):
+        """
+            获取输出和网格
+        Args:
+            output:
+            k:
+            stride:
+
+        Returns:
+
+        """
         grid = self.grids[k]
         hsize, wsize = output.shape[-2:]
         if grid.shape[2:4] != output.shape[2:4]:
@@ -64,7 +81,18 @@ class Loss(nn.Module):
         return output, grid
 
     def get_losses(self, x_shifts, y_shifts, expanded_strides, labels, outputs):
+        """
+            获取loss
+        Args:
+            x_shifts: 相较于x偏移
+            y_shifts: 相较于y偏移
+            expanded_strides:
+            labels: 标签
+            outputs:
 
+        Returns:
+
+        """
         # 将特征图切分成bbox,obj,cls
         # [batch, n_anchors_all, 4]，每个特征点回归参数，调整后获得预测框
         bbox_preds = outputs[:, :, :4]
@@ -154,7 +182,23 @@ class Loss(nn.Module):
     @torch.no_grad()
     def get_assignments(self, num_gt, total_num_anchors, gt_bboxes_per_image, gt_classes, bboxes_preds_per_image,
                         cls_preds_per_image, obj_preds_per_image, expanded_strides, x_shifts, y_shifts):
+        """
 
+        Args:
+            num_gt:
+            total_num_anchors:
+            gt_bboxes_per_image:
+            gt_classes:
+            bboxes_preds_per_image:
+            cls_preds_per_image:
+            obj_preds_per_image:
+            expanded_strides:
+            x_shifts:
+            y_shifts:
+
+        Returns:
+
+        """
         #   fg_mask                 [n_anchors_all]
         #   is_in_boxes_and_center  [num_gt, len(fg_mask)]
         fg_mask, is_in_boxes_and_center = self.get_in_boxes_info(gt_bboxes_per_image, expanded_strides, x_shifts,
@@ -197,6 +241,17 @@ class Loss(nn.Module):
         return gt_matched_classes, fg_mask, pred_ious_this_matching, matched_gt_inds, num_fg
 
     def bboxes_iou(self, bboxes_a, bboxes_b, xyxy=True):
+        """
+            计算两个box的IoU
+            盒子a与盒子b交集 / 盒子a与盒子b并集
+        Args:
+            bboxes_a: 盒子a
+            bboxes_b: 盒子b
+            xyxy: 是否左上右下坐标
+
+        Returns:
+
+        """
         if bboxes_a.shape[1] != 4 or bboxes_b.shape[1] != 4:
             raise IndexError
 
@@ -223,6 +278,20 @@ class Loss(nn.Module):
 
     def get_in_boxes_info(self, gt_bboxes_per_image, expanded_strides, x_shifts, y_shifts, total_num_anchors, num_gt,
                           center_radius=2.5):
+        """
+
+        Args:
+            gt_bboxes_per_image:
+            expanded_strides:
+            x_shifts:
+            y_shifts:
+            total_num_anchors:
+            num_gt:
+            center_radius:
+
+        Returns:
+
+        """
         #   expanded_strides_per_image  [n_anchors_all]
         #   x_centers_per_image         [num_gt, n_anchors_all]
         #   x_centers_per_image         [num_gt, n_anchors_all]
@@ -284,6 +353,18 @@ class Loss(nn.Module):
         return is_in_boxes_anchor, is_in_boxes_and_center
 
     def dynamic_k_matching(self, cost, pair_wise_ious, gt_classes, num_gt, fg_mask):
+        """
+            动态K分配策略，属于高级标签分配策略
+        Args:
+            cost:
+            pair_wise_ious:
+            gt_classes:
+            num_gt:
+            fg_mask:
+
+        Returns:
+
+        """
         #   cost                [num_gt, fg_mask]
         #   pair_wise_ious      [num_gt, fg_mask]
         #   gt_classes          [num_gt]
@@ -339,6 +420,12 @@ class Loss(nn.Module):
 
 class IOULoss(nn.Module):
     def __init__(self, reduction="none", loss_type="ciou"):
+        """
+            IoU损失
+        Args:
+            reduction:
+            loss_type:
+        """
         super(IOULoss, self).__init__()
         self.reduction = reduction
         self.loss_type = loss_type

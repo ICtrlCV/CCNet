@@ -14,6 +14,18 @@ import cv2
 
 class Datasets(Dataset):
     def __init__(self, annotation, input_shape, num_classes, train, path, epoch=300, mosaic=False, mosaic_epoch=15):
+        """
+            数据集
+        Args:
+            annotation: 标签列表
+            input_shape: 输入尺寸
+            num_classes: 类别个数
+            train: 是否训练
+            path: 路径
+            epoch: 迭代次数
+            mosaic: 是否使用Mosaic
+            mosaic_epoch: 后多少个关闭Mosaic
+        """
         self.annotation = annotation
         self.input_shape = input_shape
         self.num_classes = num_classes
@@ -26,9 +38,22 @@ class Datasets(Dataset):
         self.mosaic_epoch = mosaic_epoch
 
     def __len__(self):
+        """
+
+        Returns: 长度
+
+        """
         return self.length
 
     def __getitem__(self, index):
+        """
+            获取物体
+        Args:
+            index: 索引
+
+        Returns: image label image_info
+
+        """
         self.epoch_now += 1
         index = index % self.length
 
@@ -57,9 +82,32 @@ class Datasets(Dataset):
         return image, label, image_info
 
     def rand(self, a=0., b=1.):
+        """
+            随机
+        Args:
+            a: 0
+            b: 1
+
+        Returns: 随机数
+
+        """
         return np.random.rand() * (b - a) + a
 
     def get_random_data(self, annotation, input_shape, jitter=.3, hue=.1, sat=0.7, val=0.3, random=True):
+        """
+            获取随机数据
+        Args:
+            annotation: 标签
+            input_shape: 输入尺寸
+            jitter: 抖动
+            hue: HSV的H
+            sat: HSV的S
+            val: HSV的V
+            random: 是否随机
+
+        Returns: image label image_info
+
+        """
         line = annotation.split()
 
         # 读取图像并转换成RGB图像
@@ -157,6 +205,19 @@ class Datasets(Dataset):
         return image, label, image_info
 
     def get_random_data_with_Mosaic(self, annotation, input_shape, jitter=0.3, hue=.1, sat=0.7, val=0.4):
+        """
+
+        Args:
+            annotation: 标签
+            input_shape: 输入尺寸
+            jitter: 抖动
+            hue: HSV的H
+            sat: HSV的S
+            val: HSV的V
+
+        Returns: image label image_info
+
+        """
         h, w = input_shape
         min_offset_x = self.rand(0.3, 0.7)
         min_offset_y = self.rand(0.3, 0.7)
@@ -311,6 +372,14 @@ class Datasets(Dataset):
 
 
 def dataset_collate(batch):
+    """
+        数据集整理
+    Args:
+        batch: 批次
+
+    Returns: 整理后的列表 images labels image_info
+
+    """
     images = []
     labels = []
     image_info = []

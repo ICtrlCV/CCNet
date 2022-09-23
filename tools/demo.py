@@ -26,6 +26,19 @@ root = get_root_path()
 
 
 def inference(model, image, input_shape, conf_thres, nms_thres, device):
+    """
+        模型推理
+    Args:
+        model: 模型
+        image: 图片
+        input_shape: 输入尺寸
+        conf_thres: 置信度阈值
+        nms_thres: 非极大值抑制阈值
+        device: 设备
+
+    Returns: 预测后处理的图片
+
+    """
     # 转化成RGB
     try:
         cv2.cvtColor(image, cv2.COLOR_BGR2RGB)

@@ -31,6 +31,20 @@ root = get_root_path()
 
 
 def inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thres, image_paths):
+    """
+        运行推理方法
+    Args:
+        model_name: 模型名称
+        model_path: 模型路径
+        dataset: 模型数据集
+        input_shape: 输入尺寸
+        conf_thres: 置信度阈值
+        nms_thres: 非极大值抑制阈值
+        image_paths: 图片路径集合
+
+    Returns: 字典类型返回信息
+
+    """
     if model_name == "Net":
         msg_dict = {"image": [], "annotations": []}
         model_path = model_path
@@ -110,6 +124,9 @@ def inference(model_name, model_path, dataset, input_shape, conf_thres, nms_thre
 
 
 def main():
+    """
+        方法运行主函数
+    """
     # 创建服务器套接字
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # 获取本地主机名称
@@ -132,7 +149,6 @@ def main():
             # 为每一个请求开启一个处理线程
             t = ServerThreading(client_socket, address)
             t.start()
-            pass
         except Exception as identifier:
             logger.error(identifier)
             break
@@ -141,6 +157,14 @@ def main():
 
 class ServerThreading(threading.Thread):
     def __init__(self, client_socket, address, recvsize=1024 * 1024, encoding="utf-8"):
+        """
+            ServerThreading初始化
+        Args:
+            client_socket: 客户端socket
+            address: 客户端地址
+            recvsize: 接受大小
+            encoding: 编码方式
+        """
         threading.Thread.__init__(self)
         self._socket = client_socket
         self._address = address
@@ -148,6 +172,9 @@ class ServerThreading(threading.Thread):
         self._encoding = encoding
 
     def run(self):
+        """
+            运行程序
+        """
         logger.info(f"为{self._address}开启线程.....")
         try:
             # 接受数据
@@ -181,18 +208,17 @@ class ServerThreading(threading.Thread):
             logger.info(f"当前为{self._address}返回值为:{send_msg}")
             # 发送数据
             self._socket.send(f"{send_msg}".encode(self._encoding))
-            pass
         except Exception as identifier:
             self._socket.send("500".encode(self._encoding))
             logger.error(identifier)
-            pass
         finally:
             self._socket.close()
         logger.info(f"{self._address}任务结束.....")
 
-        pass
-
     def __del__(self):
+        """
+
+        """
         pass
 
 

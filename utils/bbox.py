@@ -11,6 +11,15 @@ from torchvision.ops import nms, boxes
 
 
 def decode_outputs(outputs, input_shape):
+    """
+        对模型推理结果的解码器
+    Args:
+        outputs: 模型推理结果
+        input_shape: 输入尺寸
+
+    Returns: 解码后结果
+
+    """
     grids = []
     strides = []
     # 将outputs后两位依次提取出来
@@ -71,7 +80,19 @@ def decode_outputs(outputs, input_shape):
 
 
 def post_process(prediction, num_classes, input_shape, image_info, conf_thres=0.5, nms_thres=0.4):
+    """
+        后处理
+    Args:
+        prediction: 预测值
+        num_classes: 类别个数
+        input_shape: 输入尺寸
+        image_info: 图片信息
+        conf_thres: 置信度阈值
+        nms_thres: 非极大值抑制阈值
 
+    Returns: 后处理结果
+
+    """
     # 将预测结果的格式转换成左上角右下角的格式
     # prediction  [batch_size, num_anchors, 85]
     box_corner = prediction.new(prediction.shape)

@@ -35,6 +35,11 @@ root = get_root_path()
 
 
 def main(arg_list):
+    """
+        训练主方法
+    Args:
+        arg_list: 参数表
+    """
     logger.info(f"Input params: {arg_list}")
     model_type = arg_list.model_type
     depth, width = model_initializer(model_type)

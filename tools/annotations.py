@@ -36,6 +36,9 @@ voc_image_sets_path = os.path.join(root, f"datasets/{file_dir}")
 
 
 def read_all_annotations():
+    """
+        读取所有的标签
+    """
     # 标注信息写入到txt文件中
     with open(f"{voc_image_sets_path}/all.txt", "w", encoding="utf-8") as list_file:
         for img in os.listdir(voc_img_path):
@@ -66,6 +69,9 @@ def read_all_annotations():
 
 
 def write_train_val_test_annotations():
+    """
+        按比例写入标签文件
+    """
     random.seed(0)
     with open(os.path.join(root, f"datasets/{file_dir}/all.txt")) as anno_r:
         anno_lines = anno_r.readlines()
@@ -110,6 +116,9 @@ def write_train_val_test_annotations():
 
 
 def create_annotations():
+    """
+        创建标签文件
+    """
     read_all_annotations()
     write_train_val_test_annotations()
 

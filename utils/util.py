@@ -20,6 +20,14 @@ from tqdm import tqdm
 
 
 def get_classes(classes_path):
+    """
+        获取类别信息
+    Args:
+        classes_path: 类别路径
+
+    Returns: 类别名称 类别个数
+
+    """
     # 打开类的路径并每次读取一行
     with open(classes_path, encoding="utf-8") as c_f:
         class_names = c_f.readlines()
@@ -32,6 +40,14 @@ def get_classes(classes_path):
 
 
 def get_train_lines(train_path):
+    """
+        获取训练图片信息
+    Args:
+        train_path: 训练标签路径
+
+    Returns: 训练图片标签信息
+
+    """
     with open(train_path, encoding="utf-8") as t_f:
         train_lines = t_f.readlines()
     t_f.close()
@@ -40,6 +56,14 @@ def get_train_lines(train_path):
 
 
 def get_val_lines(val_path):
+    """
+        获取验证图片信息
+    Args:
+        val_path: 验证标签路径
+
+    Returns: 验证图片标签信息
+
+    """
     with open(val_path, encoding="utf-8") as v_f:
         val_lines = v_f.readlines()
     v_f.close()
@@ -48,6 +72,14 @@ def get_val_lines(val_path):
 
 
 def get_test_lines(test_path):
+    """
+        获取测试图片信息
+    Args:
+        test_path: 测试标签路径
+
+    Returns: 测试图片标签信息
+
+    """
     with open(test_path, encoding="utf-8") as t_f:
         test_lines = t_f.readlines()
     t_f.close()
@@ -56,6 +88,16 @@ def get_test_lines(test_path):
 
 
 def load_model_weights(model, model_path, device):
+    """
+        加载模型权重
+    Args:
+        model: 模型
+        model_path: 模型权重路径
+        device: 设备
+
+    Returns: 加载权重后的模型 最好的mAP5095
+
+    """
     model_dict = model.state_dict()
     weights = torch.load(model_path, map_location=device)
     weights_dict = weights["model"]
@@ -67,6 +109,14 @@ def load_model_weights(model, model_path, device):
 
 
 def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, class_names):
+    """
+        获取真实标签
+    Args:
+        ground_truth_results_path: 真实标签存储路径
+        anno_lines: 图片txt信息
+        voc_annotations_path: 标签路径
+        class_names: 类别名称
+    """
     if not os.path.exists(ground_truth_results_path):
         os.makedirs(ground_truth_results_path)
     for line in tqdm(anno_lines):
@@ -98,6 +148,14 @@ def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, clas
 
 
 def get_color(i):
+    """
+        获取颜色
+    Args:
+        i: 类别号
+
+    Returns: 颜色
+
+    """
     color = [(0, 113, 188), (216, 82, 24), (236, 176, 31), (125, 46, 141), (118, 171, 47), (76, 189, 237),
              (161, 19, 46), (76, 76, 76), (153, 153, 153), (255, 0, 0), (255, 127, 0), (190, 190, 0), (0, 255, 0),
              (0, 0, 255), (170, 0, 255), (84, 84, 0), (84, 170, 0), (84, 255, 0), (170, 84, 0), (170, 170, 0),
@@ -114,6 +172,19 @@ def get_color(i):
 
 
 def draw_rectangle(results, image, iw, ih, input_shape, class_names):
+    """
+        绘制矩形
+    Args:
+        results: 模型预测结果
+        image: 待绘制图片
+        iw: 图片宽
+        ih: 图片高
+        input_shape: 输入尺寸
+        class_names: 类别名称
+
+    Returns: 绘制后的图片
+
+    """
     # 对预测结果进行拆分
     top_label = np.array(results[0][:, 6], dtype="int32")
     top_conf = results[0][:, 4] * results[0][:, 5]
@@ -156,11 +227,28 @@ def draw_rectangle(results, image, iw, ih, input_shape, class_names):
 
 
 def replace_path_str(path_str):
+    """
+        路径替换方法
+        适用于替换Windows、Mac和Linux
+    Args:
+        path_str: 路径
+
+    Returns: 替换后的路径
+
+    """
     path_str = path_str.replace("\\", "/")
     return path_str
 
 
 def get_root_path(project_name="CCNet"):
+    """
+        获取项目根路径
+    Args:
+        project_name: 项目名称，本项目默认CCNet
+
+    Returns: 项目根路径
+
+    """
     current_path = replace_path_str(os.path.abspath(os.path.dirname(__file__)))
     root = current_path[:current_path.find(f"{project_name}/") + len(f"{project_name}/")]
     return root

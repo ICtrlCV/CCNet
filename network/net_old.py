@@ -21,6 +21,14 @@ class Net(nn.Module):
             num_classes=80,
             act="silu",
     ):
+        """
+            初始化模型
+        Args:
+            depth: 深度
+            width: 宽度
+            num_classes: 类别个数
+            act: 激活函数
+        """
         super().__init__()
 
         # 主干网络
@@ -162,12 +170,12 @@ class Net(nn.Module):
 
         for i in range(len(in_channels)):
             self.stems.append(
-                BaseConv(in_channel=int(in_channels[i] * width), out_channel=int(256 * width), k_size=1, stride=1,
+                BaseConv(in_channel=int(in_channels[i] * width), out_channel=int(256 * width), kernel_size=1, stride=1,
                          act=act))
             # 分类
             self.cls_convs.append(nn.Sequential(*[
-                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), k_size=3, stride=1, act=act),
-                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), k_size=3, stride=1, act=act),
+                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), kernel_size=3, stride=1, act=act),
+                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), kernel_size=3, stride=1, act=act),
             ]))
             self.cls_preds.append(
                 nn.Conv2d(in_channels=int(256 * width), out_channels=num_classes, kernel_size=1, stride=1, padding=0)
@@ -175,8 +183,8 @@ class Net(nn.Module):
 
             # 预测
             self.reg_convs.append(nn.Sequential(*[
-                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), k_size=3, stride=1, act=act),
-                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), k_size=3, stride=1, act=act)
+                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), kernel_size=3, stride=1, act=act),
+                BaseConv(in_channel=int(256 * width), out_channel=int(256 * width), kernel_size=3, stride=1, act=act)
             ]))
             self.reg_preds.append(
                 nn.Conv2d(in_channels=int(256 * width), out_channels=4, kernel_size=1, stride=1, padding=0)
