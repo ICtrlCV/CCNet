@@ -132,7 +132,11 @@ class SpaceToDepth(nn.Module):
     def forward(self, x):
         # shape of x (b,c,w,h) -> y(b,4c,w/2,h/2)
         # 通道变为4倍，长宽减半
-        x = torch.cat((x[..., ::2, ::2], x[..., ::2, 1::2], x[..., ::2, 1::2], x[..., 1::2, 1::2]), dim=1)
+        top_left = x[..., ::2, ::2]
+        top_right = x[..., ::2, 1::2]
+        bottom_left = x[..., 1::2, ::2]
+        bottom_right = x[..., 1::2, 1::2]
+        x = torch.cat((top_left, top_right, bottom_left, bottom_right), dim=1)
         x = self.conv(x)
         return x
 
