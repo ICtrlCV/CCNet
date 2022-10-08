@@ -33,7 +33,19 @@ coloredlogs.install(level="INFO")
 root = get_root_path()
 
 
-def evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names,
+def check_detection_file(val_lines, save_box_path):
+    # bug fix
+    # 检查是否有没有生成的文件，预测时可能有些文件的框预测不出来，所以需要手动添加文件
+    for val_line in val_lines:
+        line_content = val_line.split()
+        line_name, line_extend = os.path.splitext(line_content[0])
+        if not os.path.exists(f"{save_box_path}/{line_name}.txt"):
+            with open(f"{save_box_path}/{line_name}.txt", "w") as f:
+                f.write("0 0 0 0 0 0\n")
+            f.close()
+
+
+def evaluate(model, val_dataloader, input_shape, num_classes, device, save_box_path, class_names,
              conf_thres=0.001, nms_thres=0.6):
     """
         评估方法
@@ -90,15 +102,6 @@ def evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device,
                         f"{predicted_class} {conf[:6]} {str(int(left))} {str(int(top))} {str(int(right))} {str(int(bottom))}\n"
                     )
             f.close()
-        # bug fix
-        # 检查是否有没有生成的文件，预测时可能有些文件的框预测不出来，所以需要手动添加文件
-        for val_line in val_lines:
-            line_content = val_line.split()
-            line_name, line_extend = os.path.splitext(line_content[0])
-            if not os.path.exists(f"{save_box_path}/{line_name}.txt"):
-                with open(f"{save_box_path}/{line_name}.txt", "w") as f:
-                    f.write("0 0 0 0 0 0\n")
-                f.close()
 
 
 def evaluate_one_img(model, val_lines, input_shape, num_classes, device, data_path, save_box_path, class_names,
@@ -255,6 +258,7 @@ def main(arg_list):
     tb_logger = SummaryWriter(log_dir=logs_path)
     # 生成真实框文件夹
     get_gt_dir(save_gt_path, val_lines, anno_path, class_names)
+    check_detection_file(val_lines, save_box_path)
 
     if arg_list.mode == 0:
         # 模型名
@@ -264,7 +268,7 @@ def main(arg_list):
         logger.info(f"Model is using {model_path} weights.")
         model, _ = load_model_weights(model, model_path, device)
         model.to(device)
-        evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names)
+        evaluate(model, val_dataloader, input_shape, num_classes, device, save_box_path, class_names)
         # evaluate_one_img(model, val_lines, input_shape, num_classes, device, data_path, save_box_path, class_names)
         compute_mAP(eval_type=eval_type, class_names=class_names, save_path=save_path)
     elif arg_list.mode == 1:
@@ -279,7 +283,7 @@ def main(arg_list):
                 model_path = f"{result_path}/{load_model_name}{file_extend}"
                 model, _ = load_model_weights(model, model_path, device)
                 model.to(device)
-                evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names)
+                evaluate(model, val_dataloader, input_shape, num_classes, device, save_box_path, class_names)
                 mAP50, mAP5095 = compute_mAP(eval_type=eval_type, class_names=class_names, save_path=save_path)
                 tb_logger.add_scalar("mAP50", mAP50, global_step=count)
                 tb_logger.add_scalar("mAP5095", mAP5095, global_step=count)

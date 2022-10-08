@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 
 from network.net import Net
 from network.loss import Loss
-from eval import evaluate, compute_mAP
+from eval import evaluate, compute_mAP, check_detection_file
 from utils.datasets import Datasets, dataset_collate
 from utils.lr_scheduler import set_optimizer_lr
 from utils.initialization import device_initializer, model_initializer
@@ -116,6 +116,7 @@ def main(arg_list):
         os.makedirs(save_box_path)
     if eval_mode:
         get_gt_dir(save_gt_path, val_lines, anno_path, class_names)
+        check_detection_file(val_lines, save_box_path)
     # 可视化训练过程
     tb_logger = SummaryWriter(log_dir=logs_path)
     # 训练器前加载模型
@@ -181,7 +182,7 @@ def main(arg_list):
         # 如果是评估模式并且处于估间隔
         if eval_mode and (epoch % eval_interval == 0 or ((epochs - mosaic_epoch) < epoch <= epochs)):
             model.eval()
-            evaluate(model, val_dataloader, val_lines, input_shape, num_classes, device, save_box_path, class_names)
+            evaluate(model, val_dataloader, input_shape, num_classes, device, save_box_path, class_names)
             mAP50, mAP5095 = compute_mAP(eval_type=eval_type, class_names=class_names, save_path=save_path)
             tb_logger.add_scalar("mAP50", mAP50, global_step=epoch)
             tb_logger.add_scalar("mAP5095", mAP5095, global_step=epoch)
