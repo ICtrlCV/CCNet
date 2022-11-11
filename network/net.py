@@ -8,7 +8,8 @@
 import torch
 import torch.nn as nn
 
-from .model_block import BaseConv, SPPFBottleneck, CSPLayer, SpaceToDepth, MobileViT, CBAM
+from .model_block import BaseConv, SPPFBottleneck, CSPLayer, SpaceToDepth, MobileViT
+from .attention_block import CBAM
 
 
 # Baseline adopts "CSPDarknet + Upsample + Decoupled head" structure
