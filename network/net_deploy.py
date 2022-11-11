@@ -8,7 +8,7 @@
 import torch
 import torch.nn as nn
 
-from .model_block import BaseConv, SPPFBottleneck, CSPLayer, CBAM
+from .model_block import BaseConv, SPPFBottleneck, CSPLayer, CBAM, FocusReplaceConv
 
 
 # Baseline adopts "CSPDarknet + Upsample + Decoupled head" structure
@@ -37,9 +37,7 @@ class Net(nn.Module):
         base_depth = max(round(depth * 3), 1)  # 3
 
         # stem
-        self.stem = nn.Sequential(
-            BaseConv(3, base_channels, 3, 2, act=act),
-        )
+        self.stem = FocusReplaceConv(3, base_channels, ksize=6, stride=2, padding=2)
 
         # dark2~dark5中的CSPLayer的n比例1:1:3:1
         # dark2

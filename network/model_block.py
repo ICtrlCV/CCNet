@@ -141,6 +141,21 @@ class SpaceToDepth(nn.Module):
         return x
 
 
+class FocusReplaceConv(nn.Module):
+    def __init__(self, in_channels, out_channels, ksize, stride, padding, groups=1, bias=False, act="silu"):
+        super().__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size=ksize, stride=stride, padding=padding,
+                              groups=groups, bias=bias, )
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.act = get_activation_function(act, inplace=True)
+
+    def forward(self, x):
+        return self.act(self.bn(self.conv(x)))
+
+    def fuseforward(self, x):
+        return self.act(self.conv(x))
+
+
 class Bottleneck(nn.Module):
     def __init__(self, in_channels, out_channels, shortcut=True, expansion=0.5, act="silu", ):
         """
