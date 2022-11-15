@@ -296,7 +296,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # 加载模型的类别s, m, l, x
     parser.add_argument("--model_type", type=str, default="s")
-    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--batch_size", type=int, default=1,
+                        help="To prevent errors caused by padding, set batch_size=1")
     parser.add_argument("--num_workers", type=int, default=2)
     parser.add_argument("--conf_thres", type=float, default=0.001, help="confidence threshold")
     parser.add_argument("--iou_thres", type=float, default=0.6, help="NMS IoU threshold")

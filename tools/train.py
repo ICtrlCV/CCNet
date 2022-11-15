@@ -145,7 +145,7 @@ def main(arg_list):
     # pin_memory锁页内存，适合大内存；shuffle打乱每个batch顺序；drop_last丢弃最后不满足的batch
     train_dataloader = DataLoader(dataset=train_datasets, batch_size=batch_size, shuffle=True, drop_last=True,
                                   num_workers=num_workers, pin_memory=True, collate_fn=dataset_collate)
-    val_dataloader = DataLoader(dataset=val_datasets, batch_size=batch_size, shuffle=True, drop_last=False,
+    val_dataloader = DataLoader(dataset=val_datasets, batch_size=1, shuffle=True, drop_last=False,
                                 num_workers=num_workers, pin_memory=True, collate_fn=dataset_collate)
 
     train_max_iter = len(train_dataloader)
