@@ -24,7 +24,7 @@
 1. 将数据集放到datasets中，并为其创建一个新的文件夹（所有路径请勿使用中文），需要使用VOC格式（JPEGImages、Annotations）；
 2. 关于生成数据集，在`tools/annotations.py`修改`voc_classes`、`file_dir`，右键运行；
 3. 关于训练，在`tools/train.py`修改`if __name__ == "__main__"`中的参数，右键运行训练即可；
-4. 训练数据在控制台中输入`tensorboard --logdir=results`即可，打开浏览器（**不要用谷歌，会出bug**），输入`localhost:6006`查看；
+4. 训练数据在控制台中输入`tensorboard --logdir=results`即可，打开浏览器（~~**不要用谷歌，会出bug**~~是cookie的问题），输入`localhost:6006`查看；
 5. 关于评估，在`tools/eval.py`修改`if __name__ == "__main__"`中的参数，右键运行评估即可。
 
 
