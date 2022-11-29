@@ -22,7 +22,7 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
 
 ## Coming Soon
 
-- [ ] Enhance the recognition of small target objects
+- [x] Enhance the recognition of small target objects
 - [ ] Add COCO format training files
 - [ ] Development of the TensorRT version
 
@@ -33,7 +33,7 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
 1. Put the dataset into datasets and create a new folder for it (all paths do not use Chinese), you need to use VOC format (JPEGImages, Annotations)
 2. About generating datasets, modify `voc_classes`, `file_dir` in `tools/annotations.py`, right-click to run
 3. Regarding training, modify the parameters in `if __name__ == "__main__"` in `tools/train.py`, right-click to run the training
-4. For training datasets, enter `tensorboard --logdir=results` in the console, open the browser (**do not use Google, there will be bugs**), enter `localhost:6006` to view;
+4. For training datasets, enter `tensorboard --logdir=results` in the console, open the browser (~~**do not use Google, there will be bugs**~~ It is the error of the cookie), enter `localhost:6006` to view;
 5. About evaluation, modify the parameters in `if __name__ == "__main__"` in `tools/eval.py`, right-click to run the evaluation
 
 
