@@ -22,7 +22,7 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
 
 ## Coming Soon
 
-- [ ] Enhance the recognition of small target objects
+- [x] Enhance the recognition of small target objects
 - [ ] Add COCO format training files
 - [ ] Development of the TensorRT version
 
