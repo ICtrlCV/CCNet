@@ -390,7 +390,7 @@ class Loss(nn.Module):
         ks = dynamic_ks.tolist()
         for gt_idx in range(num_gt):
             _, pos_idx = torch.topk(cost[gt_idx], k=ks[gt_idx], largest=False)
-            matching_matrix[gt_idx][pos_idx] = 1.0
+            matching_matrix[gt_idx][pos_idx] = 1
         del topk_ious, dynamic_ks, pos_idx
 
         # anchor_matching_gt  [fg_mask]
@@ -399,8 +399,8 @@ class Loss(nn.Module):
             # 当某一个特征点指向多个真实框的时候
             # 选取cost最小的真实框。
             _, cost_argmin = torch.min(cost[:, anchor_matching_gt > 1], dim=0)
-            matching_matrix[:, anchor_matching_gt > 1] *= 0.0
-            matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1.0
+            matching_matrix[:, anchor_matching_gt > 1] *= 0
+            matching_matrix[cost_argmin, anchor_matching_gt > 1] = 1
 
         # fg_mask_inboxes  [fg_mask]
         # num_fg为正样本的特征点个数
