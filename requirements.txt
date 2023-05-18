@@ -6,7 +6,6 @@ Pillow==9.2.0
 pycocotools==2.0.5
 tensorboardX==2.5.1
 torch==1.8.0
-torchsummary==1.5.1
+torch-summary==1.4.5
 torchvision==0.9.0
 tqdm==4.64.0
-coloredlogs==15.0.1

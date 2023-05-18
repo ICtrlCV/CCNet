@@ -8,6 +8,7 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 def get_activation_function(name="silu", inplace=True):
@@ -184,6 +185,33 @@ class Bottleneck(nn.Module):
         return y
 
 
+class AMFFBottleneck(nn.Module):
+    def __init__(self, in_channels, out_channels, shortcut=True, expansion=0.5, act="silu"):
+        """
+            AMFF-YOLOX中提出的Bottleneck
+            详细参考论文：https://doi.org/10.3390/electronics12071662
+        """
+        super().__init__()
+        hidden_channels = int(out_channels * expansion)
+        self.conv1 = nn.Conv2d(in_channels, hidden_channels, kernel_size=1, stride=1, padding=0, groups=1, bias=False)
+        self.bn = nn.BatchNorm2d(hidden_channels)
+        self.conv2 = nn.Conv2d(hidden_channels, hidden_channels, kernel_size=3, stride=1, padding=1, groups=1,
+                               bias=False)
+        self.act = get_activation_function(act, inplace=True)
+        # 使用短连接
+        self.use_add = shortcut and in_channels == out_channels
+
+    def forward(self, x):
+        y = self.conv1(x)
+        y = self.bn(y)
+        y = self.conv2(y)
+        y = self.act(y)
+
+        if self.use_add:
+            y = y + x
+        return y
+
+
 class MobileViT(nn.Module):
     def __init__(self, in_channel=1024, out_channel=1024, d_model=512, dim_feedforward=2048, nhead=2,
                  num_encoder_layers=6, num_decoder_layers=6):
@@ -235,3 +263,117 @@ class MobileViT(nn.Module):
         y = torch.cat([x, y], dim=1)
         y = self.conv4(y)
         return y
+
+
+def asff_auto_pad(k, p=None):  # kernel, padding
+    # Pad to 'same'
+    if p is None:
+        p = k // 2 if isinstance(k, int) else [x // 2 for x in k]  # auto-pad
+    return p
+
+
+class ASFFConv(nn.Module):
+    # Standard convolution
+    # ch_in, ch_out, kernel, stride, padding, groups
+    def __init__(self, in_channels, out_channels, kernel=1, stride=1, padding=None, groups=1, act=True):
+        super(ASFFConv, self).__init__()
+        self.conv = nn.Conv2d(in_channels, out_channels, kernel, stride, asff_auto_pad(kernel, padding),
+                              groups=groups, bias=False)
+        self.bn = nn.BatchNorm2d(out_channels)
+        self.act = nn.SiLU() if act is True else (act if isinstance(act, nn.Module) else nn.Identity())
+
+    def forward(self, x):
+        return self.act(self.bn(self.conv(x)))
+
+    def forward_fuse(self, x):
+        return self.act(self.conv(x))
+
+
+class ASFF(nn.Module):
+    def __init__(self, level, multiplier=1, rfb=False, vis=False, act_cfg=True):
+        """
+        multiplier should be 1, 0.5
+        which means, the channel of ASFF can be
+        512, 256, 128 -> multiplier=0.5
+        1024, 512, 256 -> multiplier=1
+        For even smaller, you need change code manually.
+        """
+        super(ASFF, self).__init__()
+        self.level = level
+        self.dim = [int(1024 * multiplier), int(512 * multiplier),
+                    int(256 * multiplier)]
+
+        self.inter_dim = self.dim[self.level]
+        if level == 0:
+            self.stride_level_1 = ASFFConv(int(512 * multiplier), self.inter_dim, 3, 2)
+
+            self.stride_level_2 = ASFFConv(int(256 * multiplier), self.inter_dim, 3, 2)
+
+            self.expand = ASFFConv(self.inter_dim, int(1024 * multiplier), 3, 1)
+        elif level == 1:
+            self.compress_level_0 = ASFFConv(int(1024 * multiplier), self.inter_dim, 1, 1)
+            self.stride_level_2 = ASFFConv(int(256 * multiplier), self.inter_dim, 3, 2)
+            self.expand = ASFFConv(self.inter_dim, int(512 * multiplier), 3, 1)
+        elif level == 2:
+            self.compress_level_0 = ASFFConv(int(1024 * multiplier), self.inter_dim, 1, 1)
+            self.compress_level_1 = ASFFConv(int(512 * multiplier), self.inter_dim, 1, 1)
+            self.expand = ASFFConv(self.inter_dim, int(256 * multiplier), 3, 1)
+
+        # when adding rfb, we use half number of channels to save memory
+        compress_c = 8 if rfb else 16
+        self.weight_level_0 = ASFFConv(self.inter_dim, compress_c, 1, 1)
+        self.weight_level_1 = ASFFConv(self.inter_dim, compress_c, 1, 1)
+        self.weight_level_2 = ASFFConv(self.inter_dim, compress_c, 1, 1)
+
+        self.weight_levels = ASFFConv(compress_c * 3, 3, 1, 1)
+        self.vis = vis
+
+    def forward(self, x):  # l,m,s
+        """
+        #
+        256, 512, 1024
+        from small -> large
+        """
+        # max feature
+        global level_0_resized, level_1_resized, level_2_resized
+        x_level_0 = x[2]
+        # mid feature
+        x_level_1 = x[1]
+        # min feature
+        x_level_2 = x[0]
+
+        if self.level == 0:
+            level_0_resized = x_level_0
+            level_1_resized = self.stride_level_1(x_level_1)
+            level_2_downsampled_inter = F.max_pool2d(x_level_2, 3, stride=2, padding=1)
+            level_2_resized = self.stride_level_2(level_2_downsampled_inter)
+        elif self.level == 1:
+            level_0_compressed = self.compress_level_0(x_level_0)
+            level_0_resized = F.interpolate(level_0_compressed, scale_factor=2, mode='nearest')
+            level_1_resized = x_level_1
+            level_2_resized = self.stride_level_2(x_level_2)
+        elif self.level == 2:
+            level_0_compressed = self.compress_level_0(x_level_0)
+            level_0_resized = F.interpolate(level_0_compressed, scale_factor=4, mode='nearest')
+            x_level_1_compressed = self.compress_level_1(x_level_1)
+            level_1_resized = F.interpolate(x_level_1_compressed, scale_factor=2, mode='nearest')
+            level_2_resized = x_level_2
+
+        level_0_weight_v = self.weight_level_0(level_0_resized)
+        level_1_weight_v = self.weight_level_1(level_1_resized)
+        level_2_weight_v = self.weight_level_2(level_2_resized)
+
+        levels_weight_v = torch.cat((level_0_weight_v, level_1_weight_v, level_2_weight_v), 1)
+        levels_weight = self.weight_levels(levels_weight_v)
+        levels_weight = F.softmax(levels_weight, dim=1)
+
+        fused_out_reduced = level_0_resized * levels_weight[:, 0:1, :, :] + \
+                            level_1_resized * levels_weight[:, 1:2, :, :] + \
+                            level_2_resized * levels_weight[:, 2:, :, :]
+
+        out = self.expand(fused_out_reduced)
+
+        if self.vis:
+            return out, levels_weight, fused_out_reduced.sum(dim=1)
+        else:
+            return out
