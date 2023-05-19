@@ -25,7 +25,7 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
 - [x] Enhance the recognition of small target objects
 - [ ] Add COCO format training files
 - [ ] Development of the TensorRT version
-
+- [x] Add AMFF-YOLOX structure
 
 
 ## How to Train and Evaluate
@@ -33,22 +33,81 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
 1. Put the dataset into datasets and create a new folder for it (all paths do not use Chinese), you need to use VOC format (JPEGImages, Annotations)
 2. About generating datasets, modify `voc_classes`, `file_dir` in `tools/annotations.py`, right-click to run
 3. Regarding training, modify the parameters in `if __name__ == "__main__"` in `tools/train.py`, right-click to run the training
-4. For training datasets, enter `tensorboard --logdir=results` in the console, open the browser (~~**do not use Google, there will be bugs**~~ It is the error of the cookie), enter `localhost:6006` to view;
+4. For training datasets, enter `tensorboard --logdir=results` in the console, open the browser, enter `localhost:6006` to view;
 5. About evaluation, modify the parameters in `if __name__ == "__main__"` in `tools/eval.py`, right-click to run the evaluation
 
+
+## Pre-deployment
+
+1. We assume that the user is using Linux and has already installed Anaconda, Miniconda, or similar virtual environment. Therefore, we will not go into further details here. If you need assistance, please consult a search engine or ChatGPT.
+
+2. Create a new environment for your virtual environment or use the base environment. In the project directory, locate the `auto_install_package.sh` file and use the following command to install the required packages for this project:
+
+   ```bash
+   sh auto_install_package.sh
+   ```
+
+3. Set the working environment to open by default. Taking Miniconda as an example, use the following command to open the `.bashrc` file:
+
+   ```bash
+   sudo vim ~/.bashrc
+   ```
+
+   Add the following statement at the end of the file:
+
+   ```bash
+   conda activate XXX(你的Pytorch环境)
+   ```
+
+   Save the file and execute the following command to complete the configuration:
+
+   ```bash
+   source ~/.bashrc
+   ```
 
 
 ## How to Communicate with Servers such as Springboot
 
-1. In the `tools/socket2springboot.py` file, we use sockets for communication. The default port of the project is `12345`. Before deploying to the server, please install the corresponding working environment of the project (Anaconda, Miniconda, etc.). Set the working environment to be enabled by default. For example, take Miniconda as an example, use the `sudo vim .bashrc` command to open the `.bashrc` file, add `conda activate XXX (your Pytorch environment)` in the last line, save it and use `source .bashrc` command to complete the configuration
 
-2. The project provides a script file, which runs as `bash socket2springboot.sh`
+1. In the `tools/socket2springboot.py` file, we use socket for communication. The default port for the project is `12345`.
 
-3. Use the `nohup python tools/socket2springboot.py` command in the current working environment to run. We can save the python output log using the `nohup python -u tools/socket2springboot.py > /your/path/log/socket2springboot.log 2>&1 &` command. If you need to restart or shut down the service, use the `htop` command to find the running program and kill it
+2. The project provides an automatic deployment script file named `socket2springboot.sh`. Before using it, please modify the `project_path` in the script file. Run the script using the following command:
 
-4. When the test runs successfully, we use the `ps -def | grep "socket2springboot.py"` command to view the pid of the current program. When it can be found, run `python test/method_test.py` to send the test Json data stream
-   
-5. The data stream uses the Json format, and the format from the client to the server is as follows:
+   ```bash
+   sh socket2springboot.sh
+   ```
+
+3. Alternatively, you can deploy manually by running the following command in the current working environment. This command runs the script in the background:
+
+   ```bash
+   nohup python tools/socket2springboot.py
+   ```
+
+   You can also run the Python script in the background and save the output log to a specified file using the following command:
+
+   ```bash
+   nohup python -u tools/socket2springboot.py > /your/path/log/logname.log 2>&1 &
+   ```
+
+   To restart or stop the service, use the `htop` command to find the running program and `kill` it, or use the kill command:
+
+   ```bash
+   kill $(ps -ef | grep "socket2springboot.py" | grep -v grep | awk "{print $2}")
+   ```
+
+4. When testing if the program is running successfully, use the following command to check the PID of the current running program:
+
+   ```bash
+   ps -def | grep "socket2springboot.py"
+   ```
+
+   Once it is found, run `method_test.py` to send a test JSON data stream:
+
+   ```bash
+   python test/method_test.py
+   ```
+
+5. The data transmission is done in JSON format. The format of the data sent from the client to the server is as follows:
 
    ```json
    {
@@ -63,9 +122,13 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
                       "/your/image/path/image3.jpg"]
    }
    ```
-6. When the data is sent, we use the `vim log/socket2springboot.log` command to open the log file, and the Json data stream returned by the server will be recorded in the file
+6. After sending the data, use the following command to open the log file. The file will record the JSON data stream returned by the server:
 
-7. The data stream is returned from the server to the client in the following format:
+   ```bash
+   vim log/socket2springboot_timestamp.log
+   ```
+
+7. The data stream returned from the server to the client is in the following format:
 
    ```json
    {
@@ -85,3 +148,27 @@ The model backbone is CSP-Darknet, the feature extraction network is PANet, and 
    }
    
    ```
+   
+## Project Display
+
+Web author @[lizhaoguo123](https://github.com/lizhaoguo123)
+
+**Detection page**
+
+![image-20221209010633957](assets/image-20221209010633957.png)
+
+![image-20221209011503907](assets/image-20221209011503907.png)
+
+**Admin page**
+
+![image-20221209010009245](assets/image-20221209010009245.png)
+
+![image-20221209010021494](assets/image-20221209010021494.png)
+
+![image-20221209010031676](assets/image-20221209010031676.png)
+
+![image-20221209010224632](assets/image-20221209010224632.png)
+
+![image-20221209010147174](assets/image-20221209010147174.png)
+
+![image-20221209010607772](assets/image-20221209010607772.png)
