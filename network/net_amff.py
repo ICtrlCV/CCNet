@@ -8,7 +8,7 @@
 import torch
 import torch.nn as nn
 
-from .model_block import BaseConv, SPPFBottleneck, CSPLayer, FocusReplaceConv, ASFF
+from .model_block import BaseConv, SPPFBottleneck, AMFFCSPLayer, FocusReplaceConv, ASFF
 from .attention_block import ECA
 
 
@@ -45,7 +45,7 @@ class Net(nn.Module):
         # dark2
         self.dark2 = nn.Sequential(
             BaseConv(base_channels, base_channels * 2, 3, 2, act=act),
-            CSPLayer(
+            AMFFCSPLayer(
                 base_channels * 2,
                 base_channels * 2,
                 # bottleneck的个数
@@ -57,7 +57,7 @@ class Net(nn.Module):
         # dark3
         self.dark3 = nn.Sequential(
             BaseConv(base_channels * 2, base_channels * 4, 3, 2, act=act),
-            CSPLayer(
+            AMFFCSPLayer(
                 base_channels * 4,
                 base_channels * 4,
                 # bottleneck的个数
@@ -69,7 +69,7 @@ class Net(nn.Module):
         # dark4
         self.dark4 = nn.Sequential(
             BaseConv(base_channels * 4, base_channels * 8, 3, 2, act=act),
-            CSPLayer(
+            AMFFCSPLayer(
                 base_channels * 8,
                 base_channels * 8,
                 # bottleneck的个数
@@ -82,7 +82,7 @@ class Net(nn.Module):
         self.dark5 = nn.Sequential(
             BaseConv(base_channels * 8, base_channels * 16, 3, 2, act=act),
             SPPFBottleneck(base_channels * 16, base_channels * 16, act=act),
-            CSPLayer(
+            AMFFCSPLayer(
                 base_channels * 16,
                 base_channels * 16,
                 # bottleneck的个数
@@ -100,7 +100,7 @@ class Net(nn.Module):
         self.lateral_conv0 = BaseConv(
             int(in_channels[2] * width), int(in_channels[1] * width), 1, 1, act=act
         )
-        self.C3_p4 = CSPLayer(
+        self.C3_p4 = AMFFCSPLayer(
             int(2 * in_channels[1] * width),
             int(in_channels[1] * width),
             round(3 * depth),
@@ -111,7 +111,7 @@ class Net(nn.Module):
         self.reduce_conv1 = BaseConv(
             int(in_channels[1] * width), int(in_channels[0] * width), 1, 1, act=act
         )
-        self.C3_p3 = CSPLayer(
+        self.C3_p3 = AMFFCSPLayer(
             int(2 * in_channels[0] * width),
             int(in_channels[0] * width),
             round(3 * depth),
@@ -123,7 +123,7 @@ class Net(nn.Module):
         self.bu_conv2 = BaseConv(
             int(in_channels[0] * width), int(in_channels[0] * width), 3, 2, act=act
         )
-        self.C3_n3 = CSPLayer(
+        self.C3_n3 = AMFFCSPLayer(
             int(2 * in_channels[0] * width),
             int(in_channels[1] * width),
             round(3 * depth),
@@ -135,7 +135,7 @@ class Net(nn.Module):
         self.bu_conv1 = BaseConv(
             int(in_channels[1] * width), int(in_channels[1] * width), 3, 2, act=act
         )
-        self.C3_n4 = CSPLayer(
+        self.C3_n4 = AMFFCSPLayer(
             int(2 * in_channels[1] * width),
             int(in_channels[2] * width),
             round(3 * depth),
