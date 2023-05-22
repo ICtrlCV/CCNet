@@ -116,6 +116,39 @@ class CSPLayer(nn.Module):
         return self.conv3(x)
 
 
+class AMFFCSPLayer(nn.Module):
+    def __init__(self, in_channels, out_channels, n=1, shortcut=True, expansion=0.5, act="silu"):
+        """
+            AMFFCSPLayer实现，优化Bottleneck
+        Args:
+            in_channels: 输入通道
+            out_channels: 输出通道
+            n: bottleneck个数
+            shortcut: 短连接
+            expansion: 通道扩张倍数
+            act: 激活函数
+        """
+        super().__init__()
+        hidden_channels = int(out_channels * expansion)
+        self.conv1 = BaseConv(in_channels, hidden_channels, kernel_size=1, stride=1, act=act)
+        self.conv2 = BaseConv(in_channels, hidden_channels, kernel_size=1, stride=1, act=act)
+        self.conv3 = BaseConv(2 * hidden_channels, out_channels, kernel_size=1, stride=1, act=act)
+        module_list = [
+            AMFFBottleneck(
+                hidden_channels, hidden_channels, shortcut, 1.0, act=act
+            )
+            for _ in range(n)
+        ]
+        self.m = nn.Sequential(*module_list)
+
+    def forward(self, x):
+        x_1 = self.conv1(x)
+        x_2 = self.conv2(x)
+        x_1 = self.m(x_1)
+        x = torch.cat((x_1, x_2), dim=1)
+        return self.conv3(x)
+
+
 class SpaceToDepth(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=1, stride=1, act="silu"):
         """
