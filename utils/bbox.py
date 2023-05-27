@@ -148,7 +148,7 @@ def post_process(prediction, num_classes, input_shape, image_info, conf_thres=0.
             box_yx = box_xy[..., ::-1]
             box_hw = box_wh[..., ::-1]
             input_shape = np.array(input_shape)
-            image_shape = np.array([image_info[i][1], image_info[i][2]])
+            image_shape = np.array([image_info[i][2], image_info[i][1]])
 
             box_mins = box_yx - (box_hw / 2.)
             box_maxes = box_yx + (box_hw / 2.)
