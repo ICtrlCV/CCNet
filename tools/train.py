@@ -63,9 +63,9 @@ def main(arg_list):
     lr_func = arg_list.lr_func
     # 检查我们使用的设备
     device = device_initializer()
-    # sgd: 1e-2  adam, adamw: 1e-4
+    # sgd: 1e-2  adam, adamw: 1e-3
     if optim == "adam" or optim == "adamw":
-        init_lr = 1e-4 / 8
+        init_lr = 1e-3 / 8
         min_lr = init_lr * 0.01
     else:
         init_lr = 1e-2 / 8
