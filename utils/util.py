@@ -108,7 +108,7 @@ def load_model_weights(model, model_path, device):
     return model, best_ap5095
 
 
-def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, class_names):
+def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, class_names, use_difficult=False):
     """
         获取真实标签
     Args:
@@ -116,6 +116,7 @@ def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, clas
         anno_lines: 图片txt信息
         voc_annotations_path: 标签路径
         class_names: 类别名称
+        use_difficult: 是否使用difficult标签
     """
     if not os.path.exists(ground_truth_results_path):
         os.makedirs(ground_truth_results_path)
@@ -140,7 +141,7 @@ def get_gt_dir(ground_truth_results_path, anno_lines, voc_annotations_path, clas
                 right = bndbox.find("xmax").text
                 bottom = bndbox.find("ymax").text
 
-                if difficult_flag:
+                if difficult_flag and use_difficult:
                     fw.write(f"{obj_name} {left} {top} {right} {bottom} difficult\n")
                 else:
                     fw.write(f"{obj_name} {left} {top} {right} {bottom}\n")
