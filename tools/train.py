@@ -130,7 +130,7 @@ def main(arg_list):
         optimizer = torch.optim.AdamW(model.parameters(), lr=init_lr, betas=(0.937, 0.999))
     elif optim == "sgd":
         # 动量不宜设置太高
-        optimizer = torch.optim.SGD(model.parameters(), lr=init_lr, momentum=0.9)
+        optimizer = torch.optim.SGD(model.parameters(), lr=init_lr, momentum=0.937, weight_decay=5e-4)
     else:
         raise
 
